@@ -1,7 +1,5 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Numeric, SmallInteger, String, Integer, Text, func
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Numeric, SmallInteger, String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
-from flask_sqlalchemy import SQLAlchemy
 
 Base = declarative_base()
 
@@ -16,7 +14,7 @@ class User(Base):
     email = Column(String(50), unique=True, nullable=False)
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
-    is_admin = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
     password = Column(String(50), nullable=False)
 
     def __init__(self, email, first_name, last_name, is_admin=False, password=None):
@@ -35,9 +33,9 @@ class Project(Base):
     code = Column(String(50), nullable=False)
     name = Column(String(50), nullable=False)
     description = Column(Text, nullable=True)
-    start_date = Column(Date, nullable=True)
+    start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
-    is_archived = Column(Boolean, default=False)
+    is_archived = Column(Boolean, nullable=False)
 
     def __init__(self, code, name, description=None, start_date=None, end_date=None, is_archived=False):
         self.code = code
@@ -54,7 +52,7 @@ class Action(Base):
 
     id_action = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
-    description = Column(String(50), nullable=True)
+    description = Column(Text, nullable=True)
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
 
     def __init__(self, name, description=None, id_project=None):
@@ -103,15 +101,15 @@ class Travel(Base):
     return_place = Column(String(50), nullable=False)
     status = Column(String(50), nullable=False)
     purpose = Column(String(50), nullable=False)
-    start_municipality = Column(String(50), nullable=True)
-    destination = Column(String(50), nullable=True)
-    night_count = Column(SmallInteger, nullable=True)
-    meal_count = Column(SmallInteger, nullable=True)
+    start_municipality = Column(String(50), nullable=False)
+    destination = Column(String(50), nullable=False)
+    night_count = Column(SmallInteger, nullable=False)
+    meal_count = Column(SmallInteger, nullable=False)
     comment = Column(Text, nullable=True)
-    license_vehicle = Column(String(12), nullable=True)
+    license_vehicle = Column(String(12), nullable=False)
     comment_vehicle = Column(Text, nullable=True)
-    start_km = Column(SmallInteger, nullable=True)
-    end_km = Column(SmallInteger, nullable=True)
+    start_km = Column(SmallInteger, nullable=False)
+    end_km = Column(SmallInteger, nullable=False)
     id_user = Column(Integer, ForeignKey('user.id_user'), nullable=False)
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
 
