@@ -3,6 +3,7 @@ config/config.local.yml
 config/google-credentials.json
 .flaskenv
 *.ztr-directory
+alembic.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

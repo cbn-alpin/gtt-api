@@ -1,10 +1,32 @@
-from flask import Flask
+# Python libraries
 
-app = Flask(__name__)
+from flask import jsonify
 
-@app.route("/")
-def hello_cbna():
-    return "<p>Hello, CBNA!</p>"
+from flask_migrate import Migrate
 
-if __name__ == '__main__':
-   app.run()
+from src.api import create_api, db
+
+# Creating the Flask application
+api = create_api()
+
+# Database migration
+migrate = Migrate(api, db)
+
+
+
+
+@api.route('/health', methods=['GET'])
+def health():
+	# Handle here any business logic for ensuring you're application is healthy (DB connections, etc...)
+    return "Healthy: OK"
+
+
+@api.errorhandler(404)
+def page_not_found(e):
+    return jsonify({
+        'status': 'error',
+        'type': 'NOT_FOUND',
+        'code': 'RESOURCE_NOT_FOUND',
+        'message': 'The requested URL was not found on the server. You can check available endpoints at /'
+    }), 404
+
