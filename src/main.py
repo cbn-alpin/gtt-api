@@ -1,22 +1,32 @@
-from flask import Flask
-from sqlalchemy import create_engine
-from sqlalchemy.sql import text
-app = Flask(__name__)
+# Python libraries
 
-@app.route("/")
-def hello_cbna():
-    return "<p>Hello, CBNA!</p>"
+from flask import jsonify
 
+from flask_migrate import Migrate
 
-engine = create_engine("postgresql://cbna:akQU0nTmDVr2tOOQAdoIF2CD5A6LmSjn@dpg-cug94hqj1k6c738kjs00-a.frankfurt-postgres.render.com/cbna")
+from src.api import create_api, db
 
+# Creating the Flask application
+api = create_api()
 
-def appBD():
-    with engine.connect() as conn:
-        stmt = text("select * from cbna")
-        print(conn.execute(stmt).fetchall())
+# Database migration
+migrate = Migrate(api, db)
 
 
-if __name__ == "__main__":
-    appBD()
-    app.run()
+
+
+@api.route('/health', methods=['GET'])
+def health():
+	# Handle here any business logic for ensuring you're application is healthy (DB connections, etc...)
+    return "Healthy: OK"
+
+
+@api.errorhandler(404)
+def page_not_found(e):
+    return jsonify({
+        'status': 'error',
+        'type': 'NOT_FOUND',
+        'code': 'RESOURCE_NOT_FOUND',
+        'message': 'The requested URL was not found on the server. You can check available endpoints at /'
+    }), 404
+
