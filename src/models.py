@@ -17,7 +17,7 @@ class User(Base):
     is_admin = Column(Boolean, default=False, nullable=False)
     password = Column(String(50), nullable=False)
 
-    def __init__(self, email, first_name, last_name, is_admin=False, password=None):
+    def __init__(self, email, first_name, last_name, is_admin, password=None):
         self.email = email
         self.first_name = first_name
         self.last_name = last_name
@@ -37,7 +37,7 @@ class Project(Base):
     end_date = Column(Date, nullable=True)
     is_archived = Column(Boolean, nullable=False)
 
-    def __init__(self, code, name, description=None, start_date=None, end_date=None, is_archived=False):
+    def __init__(self, code, name,start_date, description=None, end_date=None, is_archived=False):
         self.code = code
         self.name = name
         self.description = description
@@ -55,7 +55,7 @@ class Action(Base):
     description = Column(Text, nullable=True)
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
 
-    def __init__(self, name, description=None, id_project=None):
+    def __init__(self, name, id_project, description=None):
         self.name = name
         self.description = description
         self.id_project = id_project
@@ -114,8 +114,8 @@ class Travel(Base):
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
 
     def __init__(self, start_date, end_date, start_place, return_place, status, purpose, id_user, id_project,
-                 start_municipality=None, destination=None, night_count=None, meal_count=None, comment=None,
-                 license_vehicle=None, comment_vehicle=None, start_km=None, end_km=None):
+                 start_municipality, destination, night_count, meal_count, start_km, end_km,
+                 license_vehicle, comment=None, comment_vehicle=None):
         self.start_date = start_date
         self.end_date = end_date
         self.start_place = start_place
