@@ -1,6 +1,6 @@
 from flask import request, jsonify, abort
 from app import app, db
-from models import Project
+from src.models import Project
 
 # Create a new project
 @app.route('/projects', methods=['POST'])
