@@ -1,9 +1,8 @@
-from dataclasses import fields
 from marshmallow import Schema
+import marshmallow
 
 
 class ActionSchema(Schema):
-    id_action= fields.Integer()
-    name = fields.Str()
-    description = fields.Text()
- 
+    id_action= marshmallow.fields.Integer()
+    name = marshmallow.fields.String()
+    description = marshmallow.fields.String()
