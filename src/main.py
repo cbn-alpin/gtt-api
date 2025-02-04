@@ -5,6 +5,8 @@ from flask import jsonify
 from flask_migrate import Migrate
 
 from src.api import create_api, db
+from src.api.project.routes import resources as projects_ressources
+
 
 # Creating the Flask application
 api = create_api()
@@ -30,3 +32,4 @@ def page_not_found(e):
         'message': 'The requested URL was not found on the server. You can check available endpoints at /'
     }), 404
 
+api.register_blueprint(projects_ressources)

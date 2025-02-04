@@ -80,10 +80,10 @@ class ConfigLoader:
             try:
                 if isinstance(field.type(),list):
                     values[field.name] = self.load_list(
-                        environ.get(field.name.upper(), data[field.name]),
+                        data[field.name],
                         typing.get_args(field.type)[0])
                 else :
-                    values[field.name] = environ.get(field.name.upper(), data[field.name])
+                    values[field.name] = data[field.name]
             except KeyError:
                 if field.default != dataclasses.MISSING:
                     values[field.name] = field.default

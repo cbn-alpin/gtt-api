@@ -30,4 +30,4 @@ Installer les dépendances :
 
 Lancement du framwork Flask :
 
-    FLASK_APP=src/main.py flask run
+    FLASK_APP=src/main.py CONFIG_PATH=.env flask run
