@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
-from src.api.project.services import ProjectDBService, create_project
+from src.api.project.services import create_project, get_all_projects, update, delete
 from src.models import Project
 
 resources = Blueprint('projects', __name__)
@@ -32,7 +32,7 @@ def get_projects():
     current_app.logger.info('In GET /api/projects')
     response = None
     try:
-        response = ProjectDBService.get_all_projects()
+        response = get_all_projects()
         response = jsonify(response), 200
     except ValueError as error:
         current_app.logger.error(error)
@@ -54,7 +54,7 @@ def update_project(project_id: int):
     response = None
     try:
         posted_data = request.get_data
-        response = ProjectDBService.update(posted_data)
+        response = update(posted_data)
         response = jsonify(response), 200
     except ValueError as error:
         current_app.logger.error(error)
@@ -72,8 +72,7 @@ def update_project(project_id: int):
 def delete_project(project_id: int):
     current_app.logger.info('In DELETE /api/projects/{project_id}')
     try:
-        project = ProjectDBService.get_project_by_id(project_id)
-        response = ProjectDBService.delete(project_id, project['name'])
+        response = delete(project_id)
         response = jsonify(response), 200
     except ValueError as error:
         current_app.logger.error(error)
