@@ -1,7 +1,8 @@
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Numeric, SmallInteger, String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
+from src.api import db
 
-Base = declarative_base()
+Base = db.Model
 
 
 

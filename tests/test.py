@@ -1,21 +1,25 @@
 import os
+from alembic.config import Config
+from alembic import command
 import pytest
 from datetime import date
 from src.main import api, db
 
 @pytest.fixture
 def app():
-    # Set test config using environment variables
-    os.environ['FLASK_ENV'] = 'development'
+
     os.environ['CONFIG_PATH'] = '.env'
 
-    # Create test app
     app = api
     app.config['TESTING'] = True
 
     # Create tables
     with app.app_context():
         db.create_all()
+        alembic_cfg = Config("alembic.ini")
+
+        command.upgrade(alembic_cfg, "head")
+
 
     yield app
 
@@ -102,9 +106,18 @@ def test_create_project_with_minimal_data(client):
     """Test creating a project with only required fields"""
     minimal_project = {
         "name": "Minimal Project",
+        "start_date": "2024-03-01",
         "code": 54321
     }
     response = client.post('/api/projects', json=minimal_project)
     assert response.status_code == 201
 
+def test_create_project_without_minimal_data(client):
+    """Test creating a project with only required fields"""
+    minimal_project = {
+        "name": "Minimal Project",
+        "code": 54321
+    }
+    response = client.post('/api/projects', json=minimal_project)
+    assert response.status_code == 400
 

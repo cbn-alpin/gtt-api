@@ -3,8 +3,10 @@ from enum import Enum
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
+import sqlalchemy
 from src.api import db
 
+from src.api.exception import DBInsertException
 from src.models import Project
 from .schema import ProjectSchema
 
@@ -27,14 +29,15 @@ def create_project(project: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - insert : {error}")
-        raise
-    except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - insert : {error}")
-        raise
-    finally:
         if db.session is not None:
             db.session.close()
+        raise DBInsertException()
+    except sqlalchemy.exc.IntegrityError as error:
+        db.session.rollback()
+        current_app.logger.error(f"ProjectDBService - insert : {error}")
+        if db.session is not None:
+            db.session.close()
+        raise DBInsertException()
 
 
 
