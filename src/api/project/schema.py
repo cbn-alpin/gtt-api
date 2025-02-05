@@ -19,6 +19,6 @@ class ProjectUpdateSchema(Schema):
     code = fields.Integer()
     name = fields.String()
     description = fields.String()
-    start_date = fields.Date(required=False)
-    end_date = fields.Date(required=False)
+    start_date = fields.Date()
+    end_date = fields.Date()
     is_archived = fields.Boolean()

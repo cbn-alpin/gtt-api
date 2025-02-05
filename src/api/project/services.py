@@ -3,8 +3,10 @@ from enum import Enum
 from flask import abort, current_app, json
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
+import sqlalchemy
 from src.api import db
 
+from src.api.exception import DBInsertException
 from src.models import Project
 from .schema import ProjectSchema, ProjectUpdateSchema
 
@@ -27,14 +29,15 @@ def create_project(project: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - insert : {error}")
-        raise
-    except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - insert : {error}")
-        raise
-    finally:
         if db.session is not None:
             db.session.close()
+        raise DBInsertException()
+    except sqlalchemy.exc.IntegrityError as error:
+        db.session.rollback()
+        current_app.logger.error(f"ProjectDBService - insert : {error}")
+        if db.session is not None:
+            db.session.close()
+        raise DBInsertException()
 
 
 def get_project_by_id(project_id : int):
@@ -75,16 +78,12 @@ def update(project, project_id):
     print(existing_project)
     data = ProjectSchema().load(project, unknown=EXCLUDE)
     print(data)
-    for key, value in data.items():
-        if hasattr(existing_project, key): 
-            setattr(existing_project, key, value) 
+    print(existing_project)
 
-    updated_project = ProjectUpdateSchema().load(existing_project, unknown=EXCLUDE)
-
-    db.session.merge(updated_project)
+    db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
     db.session.close()
-    return existing_project
+    return get_project_by_id(project_id)
  
 
 

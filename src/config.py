@@ -49,7 +49,7 @@ class Config:
             host = self.DATABASE_TEST_IP
             port = self.DATABASE_TEST_PORT
             name = self.DATABASE_TEST_NAME
-        elif env == 'dev':
+        elif env == 'development':
             user = self.DATABASE_DEV_USER
             password = self.DATABASE_DEV_PASSWORD
             host = self.DATABASE_DEV_IP

@@ -1,10 +1,12 @@
 # Python libraries
 
 from flask import jsonify
+from flask_cors import CORS
 
 from flask_migrate import Migrate
 
 from src.api import create_api, db
+from src.api.exception import DBInsertException
 from src.api.project.routes import resources as projects_ressources
 
 
@@ -14,7 +16,7 @@ api = create_api()
 # Database migration
 migrate = Migrate(api, db)
 
-
+CORS(api)
 
 
 @api.route('/health', methods=['GET'])
@@ -31,5 +33,15 @@ def page_not_found(e):
         'code': 'RESOURCE_NOT_FOUND',
         'message': 'The requested URL was not found on the server. You can check available endpoints at /'
     }), 404
+
+@api.errorhandler(DBInsertException)
+def handle_db_insert_error(error):
+    return jsonify({
+        'status': 'error',
+        'type': 'DATABASE_ERROR',
+        'code': 'INSERT_FAILED',
+        'message': error.message
+    }), error.status_code
+
 
 api.register_blueprint(projects_ressources)

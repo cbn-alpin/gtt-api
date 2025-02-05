@@ -1,3 +1,5 @@
+import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -5,7 +7,13 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.models import Base
+# Add the project directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# Import the Flask app and models
+from src.main import api
+from src.api import db
+from src.models import Base  # Import all your models here
 
 target_metadata = Base.metadata
 
@@ -61,15 +69,20 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # Use Flask-SQLAlchemy's database URL
+    configuration = config.get_section(config.config_ini_section)
+    configuration["sqlalchemy.url"] = api.config["SQLALCHEMY_DATABASE_URI"]
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=db.metadata,  # Use Flask-SQLAlchemy's metadata
         )
 
         with context.begin_transaction():

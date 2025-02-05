@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
 from src.api.project.services import create_project, get_all_projects, update, delete, get_project_by_id as project_by_id
 from src.models import Project
@@ -13,6 +14,13 @@ def post_project():
     current_app.logger.debug('In POST /api/project')
     if not data.get('code') or not data.get('name'):
         abort(400, description="Code and Name are required fields")
+
+    if data.get('start_date') and data.get('end_date'):
+        try:
+            if datetime.strptime(data.get('start_date'), "%Y-%m-%d") > datetime.strptime(data.get('end_date'), "%Y-%m-%d"):
+                abort(400, description="Start date after end date")
+        except ValueError:
+            abort(400, description="Invalid date format")
 
     project_id = create_project(data)
     return jsonify({'message': 'Project created', 'project': project_id}), 201

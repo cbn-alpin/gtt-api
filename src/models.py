@@ -1,7 +1,8 @@
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Numeric, SmallInteger, String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
+from src.api import db
 
-Base = declarative_base()
+Base = db.Model
 
 
 
@@ -37,7 +38,9 @@ class Project(Base):
     end_date = Column(Date, nullable=True)
     is_archived = Column(Boolean, nullable=False)
 
-    def __init__(self, code, name,start_date, description=None, end_date=None, is_archived=False):
+    def __init__(self, code, name,start_date, id_project='', description=None, end_date=None, is_archived=False):
+        if id_project != '':
+            self.id_project = id_project
         self.code = code
         self.name = name
         self.description = description
