@@ -1,6 +1,6 @@
 from enum import Enum
 
-from flask import current_app
+from flask import abort, current_app, json
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
 import sqlalchemy
@@ -8,7 +8,7 @@ from src.api import db
 
 from src.api.exception import DBInsertException
 from src.models import Project
-from .schema import ProjectInputSchema, ProjectSchema
+from .schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
 
 
 def create_project(data: dict) -> int:
@@ -41,15 +41,26 @@ def create_project(data: dict) -> int:
         raise DBInsertException()
 
 
+def get_project_by_id(project_id : int):
+    project_object = db.session.query(Project).filter_by(id_project=project_id).first()
+    schema = ProjectSchema()
+    project = schema.dump(project_object)
+    project['list_action'] = []
+    db.session.close()
+    return project
+
+
+
+
 
 def get_all_projects():
     projects = []
     try:
         projects_objects = db.session.query(Project)
-
         schema = ProjectSchema(many=True)
         projects = schema.dump(projects_objects)
-
+        for project in projects:
+                    project['list_action'] = []
         db.session.close()
         return projects
     except ValueError as error:
@@ -61,30 +72,18 @@ def get_all_projects():
 
 
 
-def update(project):
-    update_project = None
-    try:
-        data = ProjectSchema(only=('code', 'name', 'description', 'start_date', 'end_date')) \
-            .load(project, unknown=EXCLUDE)
-        project = Project(**data)
+def update(project, project_id):
+    existing_project = get_project_by_id(project_id)
+    if not existing_project:
+        abort(404, description="Project not found")
+    data = ProjectSchema().load(project, unknown=EXCLUDE)
 
-        db.session.merge(project)
-        db.session.commit()
+    db.session.query(Project).filter_by(id_project=project_id).update(data)
+    db.session.commit()
+    db.session.close()
+    return get_project_by_id(project_id)
 
-        update_project = ProjectSchema().dump(project)
-        db.session.close()
-        return update_project
-    except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - update : {error}")
-        raise
-    except ValueError as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - update : {error}")
-        raise
-    finally:
-        if db.session is not None:
-            db.session.close()
+
 
 
 
