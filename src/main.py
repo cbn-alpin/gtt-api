@@ -4,6 +4,7 @@ from flask import jsonify
 from flask_cors import CORS
 
 from flask_migrate import Migrate
+import marshmallow
 
 from src.api import create_api, db
 from src.api.exception import DBInsertException
@@ -42,6 +43,15 @@ def handle_db_insert_error(error):
         'code': 'INSERT_FAILED',
         'message': error.message
     }), error.status_code
+
+@api.errorhandler(marshmallow.exceptions.ValidationError)
+def handle_schema_error(error):
+    return jsonify({
+        'status': 'error',
+        'type': 'DATABASE_ERROR',
+        'code': 'INSERT_FAILED',
+        'message': "error, schema incorrect"
+    }), 400
 
 
 api.register_blueprint(projects_ressources)

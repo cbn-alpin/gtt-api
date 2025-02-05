@@ -8,11 +8,12 @@ from src.api import db
 
 from src.api.exception import DBInsertException
 from src.models import Project
-from .schema import ProjectSchema
+from .schema import ProjectInputSchema, ProjectSchema
 
 
-def create_project(project: dict) -> int:
+def create_project(data: dict) -> int:
     try:
+        project = ProjectInputSchema().load(data)
         project = Project(
             code=project['code'],
             name=project['name'],
