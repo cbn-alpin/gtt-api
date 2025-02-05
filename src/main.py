@@ -1,10 +1,10 @@
 # Python libraries
 
+import os
 from flask import jsonify
 from flask_cors import CORS
 
 from flask_migrate import Migrate
-from authlib.integrations.flask_client import OAuth
 from src.api import create_api, db
 from src.api.project.routes import resources as projects_ressources
 from src.api.auth.routes import auth_bp
@@ -18,7 +18,6 @@ migrate = Migrate(api, db)
 
 CORS(api)
 
-oauth = OAuth(api)
 
 @api.route('/health', methods=['GET'])
 def health():
