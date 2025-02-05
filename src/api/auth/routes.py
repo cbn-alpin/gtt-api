@@ -8,7 +8,7 @@ from app.auth.utils import generate_jwt
 auth_bp = Blueprint('auth', __name__)
 oauth = OAuth()
 
-# 🔵 Authentik OAuth
+# Authentik OAuth
 authentik = oauth.register(
     name="authentik",
     client_id=os.getenv("AUTHENTIK_CLIENT_ID"),
@@ -18,7 +18,7 @@ authentik = oauth.register(
     client_kwargs={"scope": "openid profile email"},
 )
 
-# 🟢 Google OAuth
+# Google OAuth
 google = oauth.register(
     name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
