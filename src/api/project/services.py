@@ -8,7 +8,7 @@ from src.api import db
 
 from src.api.exception import DBInsertException
 from src.models import Project
-from .schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
+from src.api.project.schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
 
 
 def create_project(data: dict) -> int:
