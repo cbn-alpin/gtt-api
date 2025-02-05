@@ -1,9 +1,8 @@
 from flask import Blueprint, redirect, request, jsonify
 from authlib.integrations.flask_client import OAuth
-import jwt
 from datetime import datetime, timedelta
 import os
-from app.auth.utils import generate_jwt
+from src.api.auth.utils import generate_jwt
 
 auth_bp = Blueprint('auth', __name__)
 oauth = OAuth()

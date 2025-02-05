@@ -4,9 +4,10 @@ from flask import jsonify
 from flask_cors import CORS
 
 from flask_migrate import Migrate
-
+from authlib.integrations.flask_client import OAuth
 from src.api import create_api, db
 from src.api.project.routes import resources as projects_ressources
+from src.api.auth.routes import auth_bp
 
 
 # Creating the Flask application
@@ -17,6 +18,7 @@ migrate = Migrate(api, db)
 
 CORS(api)
 
+oauth = OAuth(api)
 
 @api.route('/health', methods=['GET'])
 def health():
@@ -34,3 +36,4 @@ def page_not_found(e):
     }), 404
 
 api.register_blueprint(projects_ressources)
+api.register_blueprint(auth_bp)
