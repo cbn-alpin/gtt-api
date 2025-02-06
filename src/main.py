@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from src.api import create_api, db
 from src.api.exception import DBInsertException
 from src.api.project.routes import resources as projects_ressources
+from src.api.action.routes import resources as actions_resources
 
 
 # Creating the Flask application
@@ -45,3 +46,4 @@ def handle_db_insert_error(error):
 
 
 api.register_blueprint(projects_ressources)
+api.register_blueprint(actions_resources)
