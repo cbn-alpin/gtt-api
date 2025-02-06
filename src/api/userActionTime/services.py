@@ -7,7 +7,7 @@ import sqlalchemy
 from src.api import db
 
 from src.api.userActionTime.schema import ProjectTimeSchema, ActionTimeSchema
-from src.api.exception import DBInsertException
+from src.api.exception import DBInsertException, NotFoundError
 from src.models import Action, Project, User, UserAction, UserActionTime
 
 
@@ -17,6 +17,8 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
         .join(Project, Action.id_project == Project.id_project) \
         .filter(UserActionTime.date.between(date_start, date_end)) \
         .filter(UserActionTime.id_user == user_id).all()
+    if not projects_actions_tuple:
+        raise NotFoundError("No projects found for the given user and date range")
 
     list_projects = []
     for project_action in projects_actions_tuple:

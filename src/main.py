@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 import marshmallow
 
 from src.api import create_api, db
-from src.api.exception import DBInsertException
+from src.api.exception import DBInsertException, NotFoundError
 from src.api.project.routes import resources as projects_ressources
 from src.api.user.routes import resources as users_ressources
 from src.api.userActionTime.routes import resources as users_action_time_ressources
@@ -43,6 +43,15 @@ def handle_db_insert_error(error):
         'status': 'error',
         'type': 'DATABASE_ERROR',
         'code': 'INSERT_FAILED',
+        'message': error.message
+    }), error.status_code
+
+@api.errorhandler(NotFoundError)
+def handle_db_insert_error(error):
+    return jsonify({
+        'status': 'error',
+        'type': 'NOT_FOUND',
+        'code': 'NOT_FOUND',
         'message': error.message
     }), error.status_code
 
