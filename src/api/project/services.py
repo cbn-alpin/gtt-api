@@ -68,10 +68,6 @@ def get_project_by_id(project_id: int):
     db.session.close()
     return project
 
-
-
-        
-
 def get_all_projects():
     projects_actions = (
         db.session.query(Project, Action)
@@ -94,18 +90,11 @@ def get_all_projects():
     db.session.close()
     return list_projects
 
-
-
-
 def update(project, project_id):
     existing_project = get_project_by_id(project_id)
     if not existing_project:
         abort(404, description="Project not found")
-    print(existing_project)
     data = ProjectSchema().load(project, unknown=EXCLUDE)
-    print(data)
-    print(existing_project)
-
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
     db.session.close()

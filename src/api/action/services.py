@@ -33,4 +33,23 @@ def create_action(action: dict) -> int:
         if db.session is not None:
             db.session.close()
         raise DBInsertException()
-    
+
+def get_action_by_id(action_id : int):
+    action_object = db.session.query(Action).filter(Action.id_action == action_id).first()
+    schema = ActionSchema()
+    action= schema.dump(action_object)
+    db.session.close()
+    return action
+
+
+def update(action, action_id):
+    existing_action = get_action_by_id(action_id)
+    print(existing_action)
+    if not existing_action:
+        abort(404, description="Action not found")
+    data = ActionSchema().load(action, unknown=EXCLUDE)
+    db.session.query(Action).filter_by(id_action=action_id).update(data)
+    db.session.commit()
+    db.session.close()
+    return get_action_by_id(action_id)
+ 
