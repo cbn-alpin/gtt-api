@@ -34,15 +34,16 @@ def get_projects():
     try:
         response = get_all_projects()
         response = jsonify(response), 200
+        return response
     except ValueError as error:
         current_app.logger.error(error)
-        response = jsonify(error.args[0]), error.args[1]
+        response = "Request error", 400
+        return response
     except Exception as e:
         current_app.logger.error(e)
-        response = jsonify({'message': 'Une erreur est survenue lors de la récupération des données projets'}), 500
-    finally:
+        response = 'Une erreur est survenue lors de la récupération des données projets', 400
         return response
-    
+   
 
 
 @resources.route('/api/projects/<int:project_id>', methods=['GET'])

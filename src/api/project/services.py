@@ -54,20 +54,16 @@ def get_project_by_id(project_id : int):
 
 def get_all_projects():
     projects = []
-    try:
-        projects_objects = db.session.query(Project)
-        schema = ProjectSchema(many=True)
-        projects = schema.dump(projects_objects)
-        for project in projects:
-                    project['list_action'] = []
-        db.session.close()
-        return projects
-    except ValueError as error:
-        current_app.logger.error(f"ProjectDBService - get_all_projects : {error}")
-        raise
-    finally:
-        if db.session is not None:
-            db.session.close()
+    projects_objects = db.session.query(Project)
+    schema = ProjectSchema(many=True)
+    projects = schema.dump(projects_objects)
+    for project in projects:
+        project['list_action'] = []
+    print(projects_objects)
+    db.session.close()
+    return projects
+
+
 
 
 
