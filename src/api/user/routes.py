@@ -86,7 +86,7 @@ def delete_user_route(user_id: int):
         response = jsonify(response), 200
     except ValueError as error:
         current_app.logger.error(error)
-        response = jsonify(error.args[0]), error.args[1]
+        response = jsonify({'message': 'An error occurred while deleting the user'}), 400
     except Exception as e:
         current_app.logger.error(e)
         response = jsonify({'message': 'An error occurred while deleting the user'}), 500
