@@ -12,10 +12,11 @@ from src.models import Action, Project, User, UserAction, UserActionTime
 
 
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
-    projects_actions_tuple = db.session.query(Project, Action).join(Action) \
-        .join(UserActionTime)\
-        .filter(UserActionTime.date >= date_start and UserActionTime.date <= date_end)\
-        .filter(UserAction.id_user == user_id).all()
+    projects_actions_tuple = db.session.query(Project, UserActionTime).select_from(UserActionTime) \
+        .join(Action, UserActionTime.id_action == Action.id_action) \
+        .join(Project, Action.id_project == Project.id_project) \
+        .filter(UserActionTime.date.between(date_start, date_end)) \
+        .filter(UserActionTime.id_user == user_id).all()
 
     list_projects = []
     for project_action in projects_actions_tuple:

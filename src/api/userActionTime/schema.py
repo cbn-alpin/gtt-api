@@ -9,6 +9,14 @@ class TimeSchema(Schema):
 class ActionTimeSchema(Schema):
     id_action= fields.Integer(required=True)
     name = fields.String(required=True)
+    date = fields.Date(required=True)
+    duration = fields.Integer(required=True)
+    description = fields.String()
+
+
+class ActionWithTimeSchema(Schema):
+    id_action= fields.Integer(required=True)
+    name = fields.String(required=True)
     description = fields.String()
     list_time = fields.Nested(TimeSchema)
 
@@ -20,4 +28,4 @@ class ProjectTimeSchema(Schema):
     start_date = fields.Date(required=False)
     end_date = fields.Date(required=False)
     is_archived = fields.Boolean()
-    list_action =  fields.Nested(ActionTimeSchema)
+    list_action =  fields.Nested(ActionWithTimeSchema)
