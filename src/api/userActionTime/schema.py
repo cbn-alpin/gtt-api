@@ -8,10 +8,8 @@ class TimeSchema(Schema):
 
 class ActionTimeSchema(Schema):
     id_action= fields.Integer(required=True)
-    name = fields.String(required=True)
     date = fields.Date(required=True)
     duration = fields.Integer(required=True)
-    description = fields.String()
 
 
 class ActionWithTimeSchema(Schema):
