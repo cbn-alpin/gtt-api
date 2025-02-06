@@ -41,7 +41,6 @@ def get_action_by_id(action_id : int):
     db.session.close()
     return action
 
-
 def update(action, action_id):
     existing_action = get_action_by_id(action_id)
     print(existing_action)
@@ -53,3 +52,21 @@ def update(action, action_id):
     db.session.close()
     return get_action_by_id(action_id)
  
+def delete(action_id: int):
+    try:
+        db.session.query(Action).filter_by(id_action=action_id).delete()
+        db.session.commit()
+
+        db.session.close()
+        return {'message': f'Le projet \'{action_id}\' a été supprimé'}
+    except Exception as error:
+        db.session.rollback()
+        current_app.logger.error(f"ProjectDBService - delete : {error}")
+        raise
+    except ValueError as error:
+        db.session.rollback()
+        current_app.logger.error(f"ProjectDBService - delete : {error}")
+        raise
+    finally:
+        if db.session is not None:
+            db.session.close()

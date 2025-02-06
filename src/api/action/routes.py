@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, request, jsonify, abort
-from src.api.action.services import create_action, update
+from src.api.action.services import create_action, delete, update
 
 resources = Blueprint('actions', __name__)
 
@@ -23,6 +23,21 @@ def update_action(action_id: int):
     response = update(posted_data, action_id)
     response = jsonify(response), 200
     return response
+
+@resources.route('/api/actions/<int:action_id>', methods=['DELETE'])
+def delete_action(action_id: int):
+    current_app.logger.info('In DELETE /api/actions/<int:action_id>')
+    try:
+        response = delete(action_id)
+        response = jsonify(response), 200
+    except ValueError as error:
+        current_app.logger.error(error)
+        response = jsonify(error.args[0]), error.args[1]
+    except Exception as e:
+        current_app.logger.error(e)
+        response = jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
+    finally:
+        return response
 
 
 
