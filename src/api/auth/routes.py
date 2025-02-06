@@ -33,8 +33,13 @@ def init_oauth():
         client_secret=os.getenv("GS_PRIVATE_KEY"),
         access_token_url=os.getenv("GS_TOKEN_URI"),
         authorize_url=os.getenv("GS_AUTH_URI"),
-        client_kwargs={"scope": "openid profile email"},
+        jwks_uri=os.getenv("GS_JWKS_URI"),
+        client_kwargs={'scope': 'openid profile email',
+              'prompt': 'select_account',
+        },
     )
+
+
 
 @auth_bp.route("/auth/login-authentik")
 def login_authentik():
@@ -47,8 +52,9 @@ def login_google():
 @auth_bp.route("/auth/callback/<provider>")
 def auth_callback(provider):
     """Handles OAuth callback for both Google & Authentik."""
-    if provider not in oauth.registry:
+    if provider not in oauth._registry:
         return jsonify({"error": "Unknown provider"}), 400
+    
 
     token = oauth.create_client(provider).authorize_access_token()
     user_info = token.get("userinfo")
