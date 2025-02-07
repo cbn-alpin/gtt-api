@@ -1,10 +1,47 @@
-from flask import Flask
+# Python libraries
 
-app = Flask(__name__)
+from flask import jsonify
+from flask_cors import CORS
 
-@app.route("/")
-def hello_cbna():
-    return "<p>Hello, CBNA!</p>"
+from flask_migrate import Migrate
 
-if __name__ == '__main__':
-   app.run()
+from src.api import create_api, db
+from src.api.exception import DBInsertException
+from src.api.project.routes import resources as projects_ressources
+
+
+# Creating the Flask application
+api = create_api()
+
+# Database migration
+migrate = Migrate(api, db)
+
+CORS(api)
+
+
+@api.route('/health', methods=['GET'])
+def health():
+	# Handle here any business logic for ensuring you're application is healthy (DB connections, etc...)
+    return "Healthy: OK"
+
+
+@api.errorhandler(404)
+def page_not_found(e):
+    return jsonify({
+        'status': 'error',
+        'type': 'NOT_FOUND',
+        'code': 'RESOURCE_NOT_FOUND',
+        'message': 'The requested URL was not found on the server. You can check available endpoints at /'
+    }), 404
+
+@api.errorhandler(DBInsertException)
+def handle_db_insert_error(error):
+    return jsonify({
+        'status': 'error',
+        'type': 'DATABASE_ERROR',
+        'code': 'INSERT_FAILED',
+        'message': error.message
+    }), error.status_code
+
+
+api.register_blueprint(projects_ressources)
