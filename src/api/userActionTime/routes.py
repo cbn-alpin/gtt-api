@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
-from src.api.userActionTime.services import get_user_projects_time_by_id
+from src.api.userActionTime.services import create_or_update_user_action_time, get_user_projects_time_by_id
 from src.models import User
 
 resources = Blueprint('users_action_time', __name__)
@@ -28,5 +28,16 @@ def get_user_projects(user_id: int):
     except Exception as e:
         current_app.logger.error(e)
         raise e
+    
+@resources.route('/api/user/<int:user_id>/projects/times', methods=['POST'])
+def post_put_user_time(user_id:int):
+    data = request.get_json()
+    current_app.logger.debug('In POST /api/user/<int:user_id>/projects/times')
+    if not data.get('duration') or not data.get('date'):
+        abort(400, description="duration and date are required fields")
+
+    action_id = create_or_update_user_action_time(data.get('date'), data.get('duration'), user_id, data.get('id_action'))
+    return jsonify({'message': 'time saved', 'action': action_id}), 201
+
 
 

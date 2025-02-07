@@ -11,6 +11,28 @@ from src.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchem
 from src.api.exception import DBInsertException, NotFoundError
 from src.models import Action, Project, User, UserAction, UserActionTime
 
+def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):  
+    existing_entry = db.session.query(UserActionTime).filter_by(
+        id_user=id_user,
+        id_action=id_action,
+        date=datetime.strptime(date, "%Y-%m-%d").date()
+    ).first()
+
+    if existing_entry:
+        existing_entry.duration = duration  
+    else:
+        new_entry = UserActionTime(
+            date=datetime.strptime(date, "%Y-%m-%d").date(),
+            duration=duration,
+            id_user=id_user,
+            id_action=id_action
+        )
+        db.session.add(new_entry)
+
+    db.session.commit()
+    return id_action
+
+
 
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
     date_series = (
