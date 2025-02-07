@@ -5,7 +5,7 @@ resources = Blueprint('actions', __name__)
 
 
 # Create a new action
-@resources.route('/api/action', methods=['POST'])
+@resources.route('/api/actions', methods=['POST'])
 def post_action():
     data = request.get_json()
 
@@ -14,7 +14,7 @@ def post_action():
         abort(400, description="Name are required fields")
 
     action_id = create_action(data)
-    return jsonify({'message': 'Action created', 'action': action_id}), 201
+    return jsonify({'message': 'Action created', 'action_id': action_id}), 201
 
 @resources.route('/api/actions/<int:action_id>', methods=['PUT'])
 def update_action(action_id: int):

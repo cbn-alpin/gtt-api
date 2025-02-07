@@ -51,7 +51,7 @@ def update(action, action_id):
     db.session.commit()
     db.session.close()
     return get_action_by_id(action_id)
- 
+
 def delete(action_id: int):
     try:
         db.session.query(Action).filter_by(id_action=action_id).delete()

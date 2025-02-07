@@ -9,8 +9,10 @@ import marshmallow
 from src.api import create_api, db
 from src.api.exception import DBInsertException, NotFoundError
 from src.api.project.routes import resources as projects_ressources
+from src.api.action.routes import resources as actions_ressources
 from src.api.user.routes import resources as users_ressources
 from src.api.userActionTime.routes import resources as users_action_time_ressources
+from src.api.userAction.routes import resources as users_action_ressources
 
 
 # Creating the Flask application
@@ -68,3 +70,5 @@ def handle_schema_error(error):
 api.register_blueprint(projects_ressources)
 api.register_blueprint(users_ressources)
 api.register_blueprint(users_action_time_ressources)
+api.register_blueprint(users_action_ressources)
+api.register_blueprint(actions_ressources)
