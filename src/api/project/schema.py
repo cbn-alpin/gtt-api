@@ -16,7 +16,7 @@ class ProjectSchema(Schema):
 
 class ProjectUpdateSchema(Schema):
     id_project= fields.Integer(required=False)
-    code = fields.Integer()
+    code = fields.String()
     name = fields.String()
     description = fields.String()
     start_date = fields.Date()
