@@ -7,7 +7,7 @@ resources = Blueprint('projects', __name__)
 
 
 # Create a new project
-@resources.route('/api/project', methods=['POST'])
+@resources.route('/api/projects', methods=['POST'])
 def post_project():
     data = request.get_json()
 
