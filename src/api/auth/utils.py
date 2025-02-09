@@ -1,8 +1,11 @@
 import jwt
 import os
 from datetime import datetime, timedelta
+from src.config import get_config
 
-JWT_SECRET = os.getenv("JWT_SECRET")
+
+config = get_config()
+JWT_SECRET = config.JWT_SECRET
 
 def generate_jwt(user_info):
     return jwt.encode(

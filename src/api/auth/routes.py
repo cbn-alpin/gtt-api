@@ -1,27 +1,25 @@
-from flask import Blueprint, redirect, request, jsonify, current_app
+from cgitb import reset
+from flask import Blueprint, redirect, request, jsonify, current_app, session, url_for
 from datetime import datetime, timedelta
 import os
 from src.api.auth.utils import generate_jwt
+from src.config import get_config
+from src.models import User
+from src.api import db
 from authlib.integrations.flask_client import OAuth
 
 auth_bp = Blueprint('auth', __name__)
 oauth = OAuth()  # Lazy initialization (no app passed yet)
+config = get_config()
 
 def init_oauth():
     """This function will be called later in `main.py` after the app is created."""
-    oauth.init_app(current_app)  # Attach OAuth to the app
-
-    authentik_authorize_url = os.getenv("AUTHENTIK_AUTHORIZE_URL", "https://auth.cbna.com/application/o/authorize/")
-    google_authorize_url = os.getenv("GS_AUTH_URI", "https://accounts.google.com/o/oauth2/auth")
-
-
-    if not authentik_authorize_url or not google_authorize_url:
-        raise RuntimeError("Missing 'authorize_url' value. Ensure AUTHENTIK_AUTHORIZE_URL and GS_AUTH_URI are set.")
+    oauth.init_app(current_app, cache=None)  # Force Authlib to use Flask session
 
     oauth.register(
         name="authentik",
-        client_id=os.getenv("AUTHENTIK_CLIENT_ID"),
-        client_secret=os.getenv("GS_PRIVATE_KEY"),
+        client_id=  config.GS_CLIENT_ID,
+        client_secret= config.GS_PRIVATE_KEY,
         access_token_url="https://auth.cbna.com/application/o/token/",
         authorize_url="https://auth.cbna.com/application/o/authorize/",
         client_kwargs={"scope": "openid profile email"},
@@ -29,37 +27,49 @@ def init_oauth():
 
     oauth.register(
         name="google",
-        client_id=os.getenv("GS_CLIENT_ID"),
-        client_secret=os.getenv("GS_PRIVATE_KEY"),
-        access_token_url=os.getenv("GS_TOKEN_URI"),
-        authorize_url=os.getenv("GS_AUTH_URI"),
-        jwks_uri=os.getenv("GS_JWKS_URI"),
+        client_id= config.GS_CLIENT_ID,
+        client_secret= config.GS_PRIVATE_KEY,
+        server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration',
         client_kwargs={'scope': 'openid profile email',
               'prompt': 'select_account',
         },
     )
 
-
-
 @auth_bp.route("/auth/login-authentik")
 def login_authentik():
     return oauth.authentik.authorize_redirect("http://localhost:5000/auth/callback/authentik")
 
+#login for google
 @auth_bp.route("/auth/google/login")
 def login_google():
-    return oauth.google.authorize_redirect("http://localhost:5000/auth/callback/google")
+    try:
+        redirect_uri = url_for('authorize', _external=True)
+        return oauth.google.authorize_redirect(redirect_uri, state=state)  # Pass state explicitly
+        # redirect_uri = "http://localhost:5000/auth/callback/google"
+    except Exception as e:
+        current_app.logger.error(f'Error during login:{str(e)}')
+        return "Error ocurred during login", 500
 
-@auth_bp.route("/auth/callback/<provider>")
-def auth_callback(provider):
-    """Handles OAuth callback for both Google & Authentik."""
-    if provider not in oauth._registry:
-        return jsonify({"error": "Unknown provider"}), 400
     
+@auth_bp.route("/authorize/google")
+def authorize_google():
+    token = oauth.google.authorize_access_token()
+    userinfo_endpoint = oauth.google.server_metadata[userinfo_endpoint]
+    resp = oauth.google.get(userinfo_endpoint)
+    user_info = resp.json()
+    username = user_info['email']
 
-    token = oauth.create_client(provider).authorize_access_token()
-    user_info = token.get("userinfo")
-    if not user_info:
-        return jsonify({"error": "Invalid user info"}), 400
+    user = User.query.filter_by(username=username)
+    if not user:
+        user = User(username=username)
+        db.session.add(user)
+        db.session.commit()
+    
+    session['username']=username
+    session['oauth_token'] = token
 
-    jwt_token = generate_jwt(user_info)  # Call function from utils.py
-    return jsonify({"jwt": jwt_token, "user": user_info})
+    return redirect(url_for('timetable'))
+
+@auth_bp.route('/timetable')
+def timetable():
+    return redirect(url_for('home'))

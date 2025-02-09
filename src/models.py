@@ -3,9 +3,6 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-
-
-
 # User model
 class User(Base):
     __tablename__ = 'user'
