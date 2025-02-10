@@ -9,9 +9,9 @@ resources = Blueprint('actions', __name__)
 def post_action():
     data = request.get_json()
 
-    current_app.logger.debug('In POST /api/action')
+    current_app.logger.debug('In POST /api/actions')
     if not data.get('name'):
-        abort(400, description="Name are required fields")
+        abort(400, description="name field is missing")
 
     action_id = create_action(data)
     return jsonify({'message': 'Action created', 'action_id': action_id}), 201
