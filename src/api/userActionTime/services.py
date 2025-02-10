@@ -90,3 +90,54 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
 
     db.session.close()
     return list_projects
+
+
+
+def get_total_duration_action(user_id: int, year: int):
+    today = datetime.today()
+    date_start = f"{year}-01-01"
+    date_end = today.strftime("%Y-%m-%d") if today.year == year and today.day != 31 else f"{year}-12-31"
+
+    total_durations = db.session.query(
+        Project.id_project,
+        Project.name.label("project_name"),
+        Action.id_action,
+        Action.name.label("action_name"),
+        func.coalesce(func.sum(UserActionTime.duration), 0).label("total_duration")
+    ).join(Action, Project.id_project == Action.id_project) \
+    .join(UserAction, Action.id_action == UserAction.id_action) \
+    .outerjoin(UserActionTime, 
+        and_(UserActionTime.id_action == Action.id_action,
+             func.date(UserActionTime.date) >= date_start,
+             func.date(UserActionTime.date) <= date_end)
+    ) \
+    .filter(UserAction.id_user == user_id) \
+    .group_by(Project.id_project, Project.name, Action.id_action, Action.name) \
+    .order_by(Project.id_project, Action.id_action) \
+    .all()
+
+    if not total_durations:
+        raise NotFoundError("No projects found for the given user and year")
+
+    results = []
+    for project_id, project_name, action_id, action_name, total_duration in total_durations:
+        project = next((p for p in results if p["id_project"] == project_id), None)
+        if project:
+            project["list_action"].append({
+                "id_action": action_id,
+                "action_name": action_name,
+                "total_duration": total_duration
+            })
+        else:
+            results.append({
+                "id_project": project_id,
+                "project_name": project_name,
+                "list_action": [{
+                    "id_action": action_id,
+                    "action_name": action_name,
+                    "total_duration": total_duration
+                }]
+            })
+
+    db.session.close()
+    return results
