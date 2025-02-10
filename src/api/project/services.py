@@ -8,7 +8,7 @@ from src.api import db
 
 from src.api.exception import DBInsertException
 from src.models import Project
-from src.api.project.schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
+from src.api.project.schema import ProjectSchema, ProjectInputSchema
 
 
 def create_project(data: dict) -> int:
@@ -40,7 +40,6 @@ def create_project(data: dict) -> int:
             db.session.close()
         raise DBInsertException()
 
-
 def get_project_by_id(project_id : int):
     project_object = db.session.query(Project).filter_by(id_project=project_id).first()
     schema = ProjectSchema()
@@ -48,10 +47,6 @@ def get_project_by_id(project_id : int):
     project['list_action'] = []
     db.session.close()
     return project
-
-
-
-
 
 def get_all_projects():
     projects = []
@@ -70,6 +65,24 @@ def get_all_projects():
         if db.session is not None:
             db.session.close()
 
+def get_archived_project():
+    projects = []
+    try:
+        projects_objects = db.session.query(Project).filter(Project.is_archived == True)
+        print(projects_objects)
+        schema = ProjectSchema(many=True)
+        projects = schema.dump(projects_objects)
+        for project in projects:
+                    project['list_action'] = []
+        db.session.close()
+        return projects
+    except ValueError as error:
+        current_app.logger.error(f"ProjectDBService - get_archived_projects : {error}")
+        raise
+    finally:
+        if db.session is not None:
+            db.session.close()
+
 
 
 def update(project, project_id):
@@ -82,10 +95,6 @@ def update(project, project_id):
     db.session.commit()
     db.session.close()
     return get_project_by_id(project_id)
-
-
-
-
 
 def delete(project_id: int):
     try:
