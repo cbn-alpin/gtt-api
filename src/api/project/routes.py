@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
+from flask_jwt_extended import jwt_required
 from src.api.project.services import create_project, get_all_projects, update, delete, get_project_by_id as project_by_id
 from src.models import Project
 
@@ -28,6 +29,7 @@ def post_project():
 
 # Get all projects
 @resources.route('/api/projects', methods=['GET'])
+@jwt_required()
 def get_projects():
     current_app.logger.info('In GET /api/projects')
     response = None
@@ -43,7 +45,7 @@ def get_projects():
         current_app.logger.error(e)
         response = 'Une erreur est survenue lors de la récupération des données projets', 400
         return response
-   
+
 
 
 @resources.route('/api/projects/<int:project_id>', methods=['GET'])
@@ -72,7 +74,6 @@ def update_project(project_id: int):
     response = update(posted_data, project_id)
     response = jsonify(response), 200
     return response
-   
 
 
 
