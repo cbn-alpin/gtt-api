@@ -6,10 +6,11 @@ from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
 import sqlalchemy
 from src.api import db
-
+from datetime import datetime
 from src.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchema, ActionTimeSchema
 from src.api.exception import DBInsertException, NotFoundError
 from src.models import Action, Project, User, UserAction, UserActionTime
+from sqlalchemy import func, literal_column, and_
 
 def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):  
     existing_entry = db.session.query(UserActionTime).filter_by(
@@ -34,12 +35,21 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
 
 
 
+
+
+
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
+    start_year = datetime.strptime(date_start, '%Y-%m-%d').year
+    end_year = datetime.strptime(date_end, '%Y-%m-%d').year
+
+    if start_year != end_year:
+        raise ValueError("Start and end dates must belong to the same year.")
+    
     date_series = (
         db.session.query(
             func.generate_series(
-                literal_column(f"'{date_start}'::timestamp"),
-                literal_column(f"'{date_end}'::timestamp"),
+                literal_column(f"'{start_year}-01-01'::timestamp"),
+                literal_column(f"'{start_year}-12-31'::timestamp"),
                 '1 day'
             ).label('date')
         ).subquery()
@@ -68,7 +78,10 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
         Action.id_action,
         date_series.c.date
     ) \
-    .filter(UserAction.id_user == user_id).all()
+    .filter(UserAction.id_user == user_id,
+            func.date(date_series.c.date) >= func.date(date_start),
+            func.date(date_series.c.date) <= func.date(date_end)) \
+    .all()
 
     if not projects_actions_time_tuple:
         raise NotFoundError("No projects found for the given user and date range")
@@ -80,8 +93,8 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
     .join(UserAction, Action.id_action == UserAction.id_action) \
     .outerjoin(UserActionTime,
         and_(UserActionTime.id_action == Action.id_action,
-             func.date(UserActionTime.date) >= date_start,
-             func.date(UserActionTime.date) <= date_end)
+             func.date(UserActionTime.date) >= f'{start_year}-01-01',
+             func.date(UserActionTime.date) <= f'{start_year}-12-31')
     ) \
     .filter(UserAction.id_user == user_id) \
     .group_by(Action.id_action) \
@@ -111,6 +124,7 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
 
     db.session.close()
     return list_projects
+
 
 
 
