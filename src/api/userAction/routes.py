@@ -20,13 +20,15 @@ def post_user_action():
     return jsonify({'message': 'User action created', 'user_action': user_action_id}), 201
 
 
-@resources.route('/api/user/action/<int:user_action_id>', methods=['DELETE'])
-def delete_user_action(user_action_id: int):
-    current_app.logger.info('In DELETE /api/user/actions/<int:user_action_id>')
-    if type(user_action_id) != int:
-        abort(400, description="User action id must be an int")
+@resources.route('/api/user/<int:user_id>/action/<int:action_id>', methods=['DELETE'])
+def delete_user_action(user_id: int, action_id: int):
+    current_app.logger.info('In DELETE /api/user/<int:user_id>/action/<int:action_id>')
+    if type(user_id) != int:
+        abort(400, description="User id must be an int")
+    if type(action_id) != int:
+        abort(400, description="Action id must be an int")
     try:
-        response = delete_user_action_service(user_action_id)
+        response = delete_user_action_service(user_id, action_id)
         return jsonify(response), 204
     except ValueError as error:
         current_app.logger.error(error)
