@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from enum import Enum
 
 from flask import abort, current_app, json
@@ -69,10 +70,6 @@ def get_project_by_id(project_id: int):
     db.session.close()
     return project
 
-
-
-
-
 def get_all_projects():
     projects_actions = (
         db.session.query(Project, Action)
@@ -94,21 +91,41 @@ def get_all_projects():
 
     db.session.close()
     return list_projects
+   
+
+def get_archived_project():
+    projects = []
+    try:
+        projects_objects = db.session.query(Project).filter(Project.is_archived == True)
+        print(projects_objects)
+        schema = ProjectSchema(many=True)
+        projects = schema.dump(projects_objects)
+        for project in projects:
+                    project['list_action'] = []
+        db.session.close()
+        return projects
+    except ValueError as error:
+        current_app.logger.error(f"ProjectDBService - get_archived_projects : {error}")
+        raise
+    finally:
+        if db.session is not None:
+            db.session.close()
+
+
 
 def update(project, project_id):
     existing_project = get_project_by_id(project_id)
+    print(existing_project)
     if not existing_project:
         abort(404, description="Project not found")
     data = ProjectSchema().load(project, unknown=EXCLUDE)
-
+    if data.get("is_archived", False):
+        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%Y-%m-%d").date()  > date.today():
+            abort(400, description="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
     db.session.close()
     return get_project_by_id(project_id)
-
-
-
-
 
 def delete(project_id: int):
     try:
