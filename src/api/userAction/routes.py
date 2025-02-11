@@ -23,14 +23,11 @@ def post_user_action():
 @resources.route('/api/user/action/<int:user_action_id>', methods=['DELETE'])
 def delete_user_action(user_action_id: int):
     current_app.logger.info('In DELETE /api/user/actions/<int:user_action_id>')
+    if type(user_action_id) != int:
+        abort(400, description="User action id must be an int")
     try:
         response = delete_user_action_service(user_action_id)
-        response = jsonify(response), 200
+        return jsonify(response), 204
     except ValueError as error:
         current_app.logger.error(error)
-        response = jsonify(error.args[0]), error.args[1]
-    except Exception as e:
-        current_app.logger.error(e)
-        response = jsonify({'message': 'An error occurred while deleting the user action'}), 500
-    finally:
-        return response
+        abort(404, description="User Action not found for given id")

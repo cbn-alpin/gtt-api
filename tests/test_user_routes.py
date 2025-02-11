@@ -41,13 +41,25 @@ def link_user_actions(client, create_user, create_actions):
             "user_id": user_id,
             "action_id": action_id
         }
-        # Assuming you have a route to link user with actions
         response = client.post('/api/user/action', json=link_data)
         assert response.status_code == 201
 
+@pytest.fixture
+def create_user_action(client, create_user, create_actions):
+    """Create a user action and return its ID."""
+    user_id = create_user
+    action_id = create_actions[0]  # Use the first action for simplicity
+    link_data = {
+        "user_id": user_id,
+        "action_id": action_id
+    }
+    response = client.post('/api/user/action', json=link_data)
+    assert response.status_code == 201
+    return response.get_json()['user_action']
+
 @pytest.mark.parametrize("user_id, expected_status, expected_length", [
-    (1, 200, 1),  # Assuming user with ID 1 exists
-    (999, 200, 0)  # Assuming user with ID 999 does not exist
+    (1, 200, 1),
+    (999, 200, 0)
 ])
 def test_get_user_projects(client, link_user_actions, user_id, expected_status, expected_length):
     """Test getting projects by user ID"""
@@ -60,9 +72,9 @@ def test_get_user_projects(client, link_user_actions, user_id, expected_status, 
 
 
 @pytest.mark.parametrize("user_id, date_start, date_end, expected_status", [
-    (1, "2024-01-01", "2024-12-31", 200),  # Assuming user with ID 1 has projects in this date range
-    (999, "2024-01-01", "2024-12-31", 404),  # Assuming user with ID 999 does not exist
-    (1, "invalid-date", "2024-12-31", 400),  # Invalid date format
+    (1, "2024-01-01", "2024-12-31", 200),
+    (999, "2024-01-01", "2024-12-31", 404),
+    (1, "invalid-date", "2024-12-31", 400),
 ])
 def test_get_user_projects_time(client, link_user_actions, user_id, date_start, date_end, expected_status):
     """Test getting projects by user ID with time range"""
@@ -71,5 +83,21 @@ def test_get_user_projects_time(client, link_user_actions, user_id, date_start, 
 
     if expected_status == 200:
         data = response.get_json()
-        assert isinstance(data, list)  # Ensure the response is a list
-        # Additional assertions can be added based on expected project structure
+        assert isinstance(data, list)
+
+def test_delete_user_action(client, create_user_action):
+    """Test deleting a user action."""
+    user_action_id = create_user_action
+
+    response = client.delete(f'/api/user/action/{user_action_id}')
+    assert response.status_code == 204
+
+    response = client.delete(f'/api/user/action/{user_action_id}')
+    assert response.status_code == 404
+
+def test_delete_nonexistent_user_action(client):
+    """Test deleting a nonexistent user action."""
+
+    response = client.delete('/api/user/action/9999')
+    assert response.status_code == 404
+
