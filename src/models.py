@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Numeric, SmallInteger, String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from src.api import db
+from sqlalchemy.orm import relationship
 
 Base = db.Model
 
@@ -57,7 +58,7 @@ class Action(Base):
     name = Column(String(50), nullable=False)
     description = Column(Text, nullable=True)
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
-
+    user_actions = relationship('UserAction', back_populates='action', cascade='all, delete-orphan')
     def __init__(self, name, id_project, description=None):
         self.name = name
         self.description = description
@@ -68,9 +69,9 @@ class Action(Base):
 class UserAction(Base):
     __tablename__ = 'user_action'
 
-    id_user = Column(Integer, ForeignKey('user.id_user'), primary_key=True)
-    id_action = Column(Integer, ForeignKey('action.id_action'), primary_key=True)
-
+    id_user = Column(Integer, ForeignKey('user.id_user', ), primary_key=True)
+    id_action = Column(Integer, ForeignKey('action.id_action', ondelete='CASCADE'), primary_key=True)
+    action = relationship('Action', back_populates='user_actions')
     def __init__(self, id_user, id_action):
         self.id_user = id_user
         self.id_action = id_action

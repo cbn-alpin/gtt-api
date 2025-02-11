@@ -6,8 +6,7 @@ from src.models import Project
 resources = Blueprint('projects', __name__)
 
 
-# Create a new project
-@resources.route('/api/project', methods=['POST'])
+@resources.route('/api/projects', methods=['POST'])
 def post_project():
     data = request.get_json()
 
@@ -34,13 +33,14 @@ def get_projects():
     try:
         response = get_all_projects()
         response = jsonify(response), 200
+        return response
     except ValueError as error:
         current_app.logger.error(error)
-        response = jsonify(error.args[0]), error.args[1]
+        response = "Request error", 400
+        return response
     except Exception as e:
         current_app.logger.error(e)
-        response = jsonify({'message': 'Une erreur est survenue lors de la récupération des données projets'}), 500
-    finally:
+        response = 'Une erreur est survenue lors de la récupération des données projets', 400
         return response
     
 # Get archived projects
