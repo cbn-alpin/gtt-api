@@ -55,12 +55,14 @@ class Action(Base):
     __tablename__ = 'action'
 
     id_action = Column(Integer, primary_key=True)
+    numero_action = Column(Integer, nullable=False)
     name = Column(String(50), nullable=False)
     description = Column(Text, nullable=True)
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
     user_actions = relationship('UserAction', back_populates='action', cascade='all, delete-orphan')
-    def __init__(self, name, id_project, description=None):
+    def __init__(self, name, numero_action, id_project, description=None):
         self.name = name
+        self.numero_action = numero_action
         self.description = description
         self.id_project = id_project
 
