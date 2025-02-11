@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, request, jsonify, abort
 from functools import wraps
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt, jwt_required
 from src.api.auth.schema import AuthInputSchema, UserAuthSchema
 from src.api.auth.services import google_auth, gtt_auth
 from src.api.exception import MissingFieldError
@@ -24,6 +24,7 @@ def admin_required(fn):
     @wraps(fn)
     @jwt_required()
     def wrapper(*args, **kwargs):
+        print("ici \n")
         claims = get_jwt()
         if claims.get("role") != "admin":
             return {"msg": "Admin access required."}, 403

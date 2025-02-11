@@ -1,13 +1,13 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
 from flask_jwt_extended import jwt_required
+from src.api.auth.services import admin_required
 from src.api.project.services import create_project, get_all_projects, update, delete, get_project_by_id as project_by_id
 from src.models import Project
 
 resources = Blueprint('projects', __name__)
 
 
-# Create a new project
 @resources.route('/api/projects', methods=['POST'])
 def post_project():
     data = request.get_json()
@@ -29,7 +29,6 @@ def post_project():
 
 # Get all projects
 @resources.route('/api/projects', methods=['GET'])
-@jwt_required()
 def get_projects():
     current_app.logger.info('In GET /api/projects')
     response = None
