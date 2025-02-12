@@ -12,7 +12,7 @@ def create_action(action: dict) -> int:
     try:
         new_action = Action(
             name=action['name'],
-            numero_action=action['numero_action'],
+            numero_action=action.get('numero_action'),
             description=action.get('description'),
             id_project=action.get('id_project')
         )
