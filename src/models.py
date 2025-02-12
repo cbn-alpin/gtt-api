@@ -55,7 +55,7 @@ class Action(Base):
     __tablename__ = 'action'
 
     id_action = Column(Integer, primary_key=True)
-    numero_action = Column(Integer, nullable=False)
+    numero_action = Column(String, nullable=False)
     name = Column(String(50), nullable=False)
     description = Column(Text, nullable=True)
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
