@@ -122,33 +122,47 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
 
 
 def get_user_project_actions(project_id):
+    project_info = (
+        db.session.query(Project.id_project, Project.name, Project.start_date, Project.end_date)
+        .filter(Project.id_project == project_id)
+        .first()
+    )
+    
+    if not project_info:
+        return None
+    
     results = (
         db.session.query(
             User.first_name,
             User.last_name,
-            Project.end_date,
             Action.numero_action,
             Action.name,
             func.sum(UserActionTime.duration).label("total_hours")
         )
-        .join(UserActionTime, User.id_user == UserActionTime.id_user)
+        .select_from(UserActionTime)
+        .join(User, UserActionTime.id_user == User.id_user)
         .join(Action, UserActionTime.id_action == Action.id_action)
         .join(Project, Action.id_project == Project.id_project)
         .filter(Project.id_project == project_id)
-        .group_by(User.id_user, Project.end_date, Action.id_action)
+        .group_by(User.id_user, Action.id_action, User.first_name, User.last_name, Action.numero_action, Action.name)
         .all()
     )
-
-    return [
-        {
-            "user_name": f"{row.first_name} {row.last_name}",
-            "date_end": row.end_date.strftime('%Y-%m-%d') if row.end_date else None,
-            "numero_action": row.numero_action,
-            "name_action": row.name,
-            "total_hours": float(row.total_hours)
-        }
-        for row in results
-    ]
+    
+    return {
+        "id_project": project_info.id_project,
+        "name_project": project_info.name,
+        "date_start": project_info.start_date.strftime('%Y-%m-%d'),
+        "date_end": project_info.end_date.strftime('%Y-%m-%d') if project_info.end_date else None,
+        "actions": [
+            {
+                "user_name": f"{row.first_name} {row.last_name}",
+                "numero_action": row.numero_action,
+                "name_action": row.name,
+                "total_hours": float(row.total_hours)
+            }
+            for row in results
+        ]
+    }
 
 
   
