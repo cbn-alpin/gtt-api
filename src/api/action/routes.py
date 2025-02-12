@@ -1,11 +1,13 @@
 from flask import Blueprint, current_app, request, jsonify, abort
 from src.api.action.services import create_action, delete, update
+from src.api.auth.services import admin_required
 
 resources = Blueprint('actions', __name__)
 
 
 # Create a new action
 @resources.route('/api/actions', methods=['POST'])
+@admin_required
 def post_action():
     data = request.get_json()
 
@@ -17,6 +19,7 @@ def post_action():
     return jsonify({'message': 'Action created', 'action_id': action_id}), 201
 
 @resources.route('/api/actions/<int:action_id>', methods=['PUT'])
+@admin_required
 def update_action(action_id: int):
     current_app.logger.info(f'In PUT /api/actions/<int:action_id>')
     posted_data = request.get_json()
@@ -25,6 +28,7 @@ def update_action(action_id: int):
     return response
 
 @resources.route('/api/actions/<int:action_id>', methods=['DELETE'])
+@admin_required
 def delete_action(action_id: int):
     current_app.logger.info('In DELETE /api/actions/<int:action_id>')
     try:

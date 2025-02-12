@@ -4,12 +4,12 @@ from src.api import db
 from src.models import UserAction
 from src.api.exception import DBInsertException
 
-def create_user_action(data: dict) -> dict:
+def create_user_action(user_id: int, action_id: int) -> dict:
     """Create a new user action."""
     try:
         user_action = UserAction(
-            id_user=data['user_id'],
-            id_action=data['action_id']
+            id_user=user_id,
+            id_action=action_id
         )
         db.session.add(user_action)
         db.session.commit()
