@@ -2,11 +2,8 @@ from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
 from src.api.userActionTime.services import get_user_projects_time_by_id
 from src.models import User
-from flask_cors import CORS
 
 resources = Blueprint('users_action_time', __name__)
-
-CORS(resources, resources={r"/*": {"origins": ["http://localhost:8080"]}})
 
 @resources.route('/api/user/<int:user_id>/projects/times', methods=['GET'])
 def get_user_projects(user_id: int):

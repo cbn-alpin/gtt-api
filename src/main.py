@@ -23,7 +23,7 @@ api = create_api()
 migrate = Migrate(api, db)
 
 # Enable CORS globally for all routes
-CORS(api, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(api)
 
 
 
@@ -69,10 +69,6 @@ def handle_schema_error(error):
         'message': "error, schema incorrect"
     }), 400
 
-@api.before_request
-def handle_preflight():
-    if request.method == "OPTIONS":
-        return "", 204
 
 api.register_blueprint(projects_ressources)
 api.register_blueprint(users_ressources)
