@@ -1,6 +1,6 @@
 # Python libraries
 
-from flask import jsonify
+from flask import jsonify, request
 from flask_cors import CORS
 
 from flask_migrate import Migrate
@@ -22,7 +22,9 @@ api = create_api()
 # Database migration
 migrate = Migrate(api, db)
 
-CORS(api)
+# Enable CORS globally for all routes
+CORS(api, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
 
 
 @api.route('/health', methods=['GET'])
@@ -67,6 +69,10 @@ def handle_schema_error(error):
         'message': "error, schema incorrect"
     }), 400
 
+@api.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        return "", 204
 
 api.register_blueprint(projects_ressources)
 api.register_blueprint(users_ressources)
