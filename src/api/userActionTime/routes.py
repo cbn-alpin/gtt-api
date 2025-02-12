@@ -5,7 +5,6 @@ from src.models import User
 
 resources = Blueprint('users_action_time', __name__)
 
-
 @resources.route('/api/user/<int:user_id>/projects/times', methods=['GET'])
 def get_user_projects(user_id: int):
     current_app.logger.info('In GET /api/user/<int:user_id>/project')
