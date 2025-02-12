@@ -30,7 +30,7 @@ def gtt_auth(data: AuthInputSchema) -> user :
             role = "user"
         identity = data['login']
 
-        access_token = create_access_token(identity=identity, additional_claims={"role": role})
+        access_token = create_access_token(identity=identity, additional_claims={"role": role, "user_id": user.id_user})
         refresh_token = create_refresh_token(identity=identity)
         return {
             'id_user': user.id_user,
@@ -55,5 +55,19 @@ def admin_required(fn):
         claims = get_jwt()
         if claims.get("role") != "admin":
             return {"msg": "Admin access required."}, 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+def user_required(fn):
+    @wraps(fn)
+    @jwt_required()
+    def wrapper(*args, **kwargs):
+        claims = get_jwt()
+        if claims.get("role") != "admin":
+            user_id_from_url = kwargs.get('user_id', None)
+            if user_id_from_url is None:
+                return {"msg": "User ID is required in the URL."}, 400
+            if claims.get("user_id") != user_id_from_url:
+                return {"msg": "Forbidden, the connected user does not have the right to access this"}, 403
         return fn(*args, **kwargs)
     return wrapper

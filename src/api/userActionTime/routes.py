@@ -1,11 +1,13 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
+from src.api.auth.services import user_required
 from src.api.userActionTime.services import create_or_update_user_action_time, get_user_projects_time_by_id
 from src.models import User
 
 resources = Blueprint('users_action_time', __name__)
 
 @resources.route('/api/user/<int:user_id>/projects/times', methods=['GET'])
+@user_required
 def get_user_projects(user_id: int):
     current_app.logger.info('In GET /api/user/<int:user_id>/project')
     date_start = request.args.get('date_start')
@@ -27,8 +29,9 @@ def get_user_projects(user_id: int):
     except Exception as e:
         current_app.logger.error(e)
         raise e
-    
+
 @resources.route('/api/user/<int:user_id>/projects/times', methods=['POST'])
+@user_required
 def post_put_user_time(user_id:int):
     data = request.get_json()
     current_app.logger.debug('In POST /api/user/<int:user_id>/projects/times')
