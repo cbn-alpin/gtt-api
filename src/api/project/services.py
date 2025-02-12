@@ -10,7 +10,7 @@ from src.api import db
 from src.api.action.schema import ActionSchema
 from src.api.exception import DBInsertException
 from src.api.project.schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
-from src.models import Action, Project
+from src.models import Action, Project, UserActionTime
 
 
 def create_project(data: dict) -> int:
@@ -129,11 +129,17 @@ def update(project, project_id):
 
 def delete(project_id: int):
     try:
+        total_duration = (
+            db.session.query(db.func.sum(UserActionTime.duration))
+            .join(Action, UserActionTime.id_action == Action.id_action)
+            .filter(Action.id_project == project_id)
+            .scalar()
+        )
+        if total_duration and total_duration > 0 :
+            return {'message': f'Le projet \'{project_id}\' ne peut pas être supprimé car des saisies du temps y sont associés'}, 403
+
         db.session.query(Project).filter_by(id_project=project_id).delete()
         db.session.commit()
-
-        db.session.close()
-        return {'message': f'Le projet \'{project_id}\' a été supprimé'}
     except Exception as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")

@@ -20,7 +20,7 @@ def gtt_auth(data: AuthInputSchema) -> user :
     hashed_password = hashlib.md5(password.encode('utf-8')).hexdigest()
 
     user = (
-        db.session.query(User).filter(User.email == login and User.password == hashed_password).first()
+        db.session.query(User).filter(User.email == login, User.password == hashed_password).first()
     )
     db.session.close()
     if user:
