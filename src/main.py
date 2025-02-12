@@ -1,6 +1,6 @@
 # Python libraries
 
-from flask import jsonify
+from flask import jsonify, request
 from flask_cors import CORS
 
 from flask_migrate import Migrate
@@ -22,7 +22,9 @@ api = create_api()
 # Database migration
 migrate = Migrate(api, db)
 
+# Enable CORS globally for all routes
 CORS(api)
+
 
 
 @api.route('/health', methods=['GET'])

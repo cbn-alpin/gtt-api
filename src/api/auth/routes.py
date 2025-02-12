@@ -19,14 +19,3 @@ def auth_gtt():
     auth = AuthInputSchema().load(data)
 
     return UserAuthSchema().dump(gtt_auth(auth))
-
-def admin_required(fn):
-    @wraps(fn)
-    @jwt_required()
-    def wrapper(*args, **kwargs):
-        print("ici \n")
-        claims = get_jwt()
-        if claims.get("role") != "admin":
-            return {"msg": "Admin access required."}, 403
-        return fn(*args, **kwargs)
-    return wrapper
