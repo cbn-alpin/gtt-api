@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import and_, func, literal_column
+from sqlalchemy import and_, func, literal_column, or_
 from flask import abort, current_app, json
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
@@ -12,7 +12,7 @@ from src.api.exception import DBInsertException, NotFoundError
 from src.models import Action, Project, User, UserAction, UserActionTime
 from sqlalchemy import func, literal_column, and_
 
-def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):  
+def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):
     existing_entry = db.session.query(UserActionTime).filter_by(
         id_user=id_user,
         id_action=id_action,
@@ -20,7 +20,7 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
     ).first()
 
     if existing_entry:
-        existing_entry.duration = duration  
+        existing_entry.duration = duration
     else:
         new_entry = UserActionTime(
             date=datetime.strptime(date, "%Y-%m-%d").date(),
@@ -44,7 +44,7 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
 
     if start_year != end_year:
         raise ValueError("Start and end dates must belong to the same year.")
-    
+
     date_series = (
         db.session.query(
             func.generate_series(
@@ -79,6 +79,7 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
         date_series.c.date
     ) \
     .filter(UserAction.id_user == user_id,
+            or_(UserActionTime.id_user == user_id, UserActionTime.id_user == None),
             func.date(date_series.c.date) >= func.date(date_start),
             func.date(date_series.c.date) <= func.date(date_end)) \
     .all()
@@ -93,6 +94,7 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
     .join(UserAction, Action.id_action == UserAction.id_action) \
     .outerjoin(UserActionTime,
         and_(UserActionTime.id_action == Action.id_action,
+             or_(UserActionTime.id_user == user_id, UserActionTime.id_user == None),
              func.date(UserActionTime.date) >= f'{start_year}-01-01',
              func.date(UserActionTime.date) <= f'{start_year}-12-31')
     ) \
@@ -128,4 +130,3 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
 
 
 
-  
