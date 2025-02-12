@@ -33,11 +33,6 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
     db.session.commit()
     return id_action
 
-
-
-
-
-
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
     start_year = datetime.strptime(date_start, '%Y-%m-%d').year
     end_year = datetime.strptime(date_end, '%Y-%m-%d').year
@@ -126,6 +121,34 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
     return list_projects
 
 
+def get_user_project_actions(project_id):
+    results = (
+        db.session.query(
+            User.first_name,
+            User.last_name,
+            Project.end_date,
+            Action.numero_action,
+            Action.name,
+            func.sum(UserActionTime.duration).label("total_hours")
+        )
+        .join(UserActionTime, User.id_user == UserActionTime.id_user)
+        .join(Action, UserActionTime.id_action == Action.id_action)
+        .join(Project, Action.id_project == Project.id_project)
+        .filter(Project.id_project == project_id)
+        .group_by(User.id_user, Project.end_date, Action.id_action)
+        .all()
+    )
+
+    return [
+        {
+            "user_name": f"{row.first_name} {row.last_name}",
+            "date_end": row.end_date.strftime('%Y-%m-%d') if row.end_date else None,
+            "numero_action": row.numero_action,
+            "name_action": row.name,
+            "total_hours": float(row.total_hours)
+        }
+        for row in results
+    ]
 
 
   
