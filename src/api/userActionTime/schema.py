@@ -15,6 +15,7 @@ class ActionTimeSchema(Schema):
 class ActionWithTimeSchema(Schema):
     id_action= fields.Integer(required=True)
     name = fields.String(required=True)
+    numero_action = fields.String()
     description = fields.String()
     list_time = fields.Nested(TimeSchema)
 
