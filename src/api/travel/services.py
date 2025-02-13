@@ -1,13 +1,15 @@
-from flask import abort, current_app
-from flask_sqlalchemy import SQLAlchemy
-from marshmallow import EXCLUDE
+from flask import current_app
 import sqlalchemy
 from src.api import db
+from src.api.travel.schema import TravelSchema
 from src.models import Travel
 from src.api.exception import DBInsertException
 
-def create_travel(travel: dict) -> int:
+def create_travel(user_id, project_id, travel_data: dict) -> int:
     try:
+        schema = TravelSchema()
+        travel = schema.load(travel_data)
+        
         new_travel = Travel(
             status=travel['status'],
             start_date=travel.get('start_date'),
@@ -25,8 +27,8 @@ def create_travel(travel: dict) -> int:
             comment_vehicle=travel.get('comment_vehicle'),
             start_km=travel.get('start_km'),
             end_km=travel.get('end_km'),
-            id_user=travel.get('id_user'),
-            id_project=travel.get('id_project')
+            id_user=user_id,
+            id_project=project_id
         )
 
         db.session.add(new_travel)
