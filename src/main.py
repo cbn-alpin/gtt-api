@@ -14,6 +14,8 @@ from src.api.user.routes import resources as users_ressources
 from src.api.userActionTime.routes import resources as users_action_time_ressources
 from src.api.userAction.routes import resources as users_action_ressources
 from src.api.auth.routes import resources as auth_ressources
+from src.api.travel.routes import resources as travels_ressources
+
 
 
 # Creating the Flask application
@@ -76,3 +78,4 @@ api.register_blueprint(users_action_time_ressources)
 api.register_blueprint(users_action_ressources)
 api.register_blueprint(actions_ressources)
 api.register_blueprint(auth_ressources)
+api.register_blueprint(travels_ressources)
