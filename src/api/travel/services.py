@@ -49,3 +49,16 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
             db.session.close()
         raise DBInsertException()
 
+def get_travel_by_id(travel_id : int):
+    travel_object = db.session.query(Travel).filter(Travel.id_travel== travel_id).first()
+    schema = TravelSchema()
+    action= schema.dump(travel_object)
+    db.session.close()
+    return action
+
+def update(travel_data, travel_id):
+    data = TravelSchema().load(travel_data)
+    db.session.query(Travel).filter_by(id_travel=travel_id).update(data)
+    db.session.commit()
+    db.session.close()
+    return get_travel_by_id(travel_id)
