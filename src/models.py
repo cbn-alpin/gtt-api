@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Numeric, SmallInteger, String, Integer, Text
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Numeric, SmallInteger, String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from src.api import db
 from sqlalchemy.orm import relationship
@@ -100,26 +100,27 @@ class Travel(Base):
     __tablename__ = 'travel'
 
     id_travel = Column(Integer, primary_key=True)
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
     start_place = Column(String(50), nullable=False)
     return_place = Column(String(50), nullable=False)
-    status = Column(String(50), nullable=False)
+    status = Column(String(50), nullable=True)
     purpose = Column(String(50), nullable=False)
     start_municipality = Column(String(50), nullable=False)
+    end_municipality = Column(String(50), nullable=False)
     destination = Column(String(50), nullable=False)
     night_count = Column(SmallInteger, nullable=False)
-    meal_count = Column(SmallInteger, nullable=False)
+    meal_count = Column(SmallInteger, nullable=True)
     comment = Column(Text, nullable=True)
-    license_vehicle = Column(String(12), nullable=False)
+    license_vehicle = Column(String(12), nullable=True)
     comment_vehicle = Column(Text, nullable=True)
-    start_km = Column(SmallInteger, nullable=False)
-    end_km = Column(SmallInteger, nullable=False)
+    start_km = Column(SmallInteger, nullable=True)
+    end_km = Column(SmallInteger, nullable=True)
     id_user = Column(Integer, ForeignKey('user.id_user'), nullable=False)
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
 
     def __init__(self, start_date, end_date, start_place, return_place, status, purpose, id_user, id_project,
-                 start_municipality, destination, night_count, meal_count, start_km, end_km,
+                 start_municipality, end_municipality, destination, night_count, meal_count, start_km, end_km,
                  license_vehicle, comment=None, comment_vehicle=None):
         self.start_date = start_date
         self.end_date = end_date
@@ -130,6 +131,7 @@ class Travel(Base):
         self.id_user = id_user
         self.id_project = id_project
         self.start_municipality = start_municipality
+        self.end_municipality = end_municipality
         self.destination = destination
         self.night_count = night_count
         self.meal_count = meal_count
