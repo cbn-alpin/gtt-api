@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 import marshmallow
 
-from src.api import create_api, db
+from src.api import create_api, db, init_db_and_migrations
 from src.api.exception import DBInsertException, NotFoundError
 from src.api.project.routes import resources as projects_ressources
 from src.api.action.routes import resources as actions_ressources
@@ -22,7 +22,7 @@ from src.api.travel.routes import resources as travels_ressources
 api = create_api()
 
 # Database migration
-migrate = Migrate(api, db)
+init_db_and_migrations(api, db)
 
 # Enable CORS globally for all routes
 CORS(api)
