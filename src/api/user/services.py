@@ -10,7 +10,7 @@ from src.api import db
 from src.api.action.schema import ActionSchema
 from src.api.exception import DBInsertException
 from src.api.project.schema import ProjectSchema
-from src.api.user.schema import UserInputSchema
+from src.api.user.schema import UserInputSchema, UserSchema
 from src.models import Action, Project, User, UserAction
 
 
@@ -67,7 +67,7 @@ def get_users():
     users = []
     try:
         users_objects = db.session.query(User)
-        users = [{"first_name": user.first_name, "last_name": user.last_name, "email": user.email} for user in users_objects]
+        users = [UserSchema().dump(user) for user in users_objects]
         db.session.close()
         return users
     except ValueError as error:
