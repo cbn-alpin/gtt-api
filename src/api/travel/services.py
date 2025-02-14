@@ -78,3 +78,36 @@ def get_travels(user_id):
 
     db.session.close()
     return list_travels
+
+
+def get_travel_by_id(travel_id: int):
+    travel_expenses = (
+        db.session.query(Travel, Expense)
+        .outerjoin(Expense, Travel.id_travel == Expense.id_travel)
+        .filter(Travel.id_travel == travel_id)
+        .all()
+    )
+
+    travel = None
+    expenses = []
+
+    for travel_object, expense_object in travel_expenses:
+        if not travel:
+            travel = TravelSchema().dump(travel_object)
+
+        if expense_object:
+            expense = ExpenseSchema().dump(expense_object)
+            expenses.append(expense)
+
+    travel["list_expenses"] = expenses if expenses else None
+
+    db.session.close()
+    return travel
+
+
+def update(travel_data, travel_id):
+    data = TravelPutSchema().load(travel_data)
+    db.session.query(Travel).filter_by(id_travel=travel_id).update(data)
+    db.session.commit()
+    db.session.close()
+    return get_travel_by_id(travel_id)
