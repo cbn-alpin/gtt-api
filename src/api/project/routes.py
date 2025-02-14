@@ -1,8 +1,10 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
 from flask_jwt_extended import jwt_required
+import requests
 from src.api.auth.services import admin_required
 from src.api.project.services import create_project, get_all_projects, get_archived_project, update, delete, get_project_by_id as project_by_id
+from src.config import get_config
 from src.models import Project
 
 resources = Blueprint('projects', __name__)
@@ -105,3 +107,13 @@ def delete_project(project_id: int):
         response = jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
     finally:
         return response
+
+@resources.route('/api/projects/gefiproj', methods=['GET'])
+def get_gefiproj_project():
+    config = get_config()
+    url = config.GEFIPROJ_URL
+
+    auth = requests.post(f"{url}api/auth/login", json={"login": config.GEFIPROJ_LOGIN, "password": config.GEFIPROJ_PASSWORD})
+    headers = {'Authorization': f'Bearer {auth.json()["access_token"]}'}
+    response = requests.get(url=f"{url}api/projects", headers=headers)
+    return jsonify(response.json()), 200
