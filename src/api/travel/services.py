@@ -2,7 +2,7 @@ from flask import current_app
 import sqlalchemy
 from src.api import db
 from src.api.expense.schema import ExpenseSchema
-from src.api.travel.schema import TravelSchema
+from src.api.travel.schema import TravelPutSchema, TravelSchema
 from src.models import Expense, Travel
 from src.api.exception import DBInsertException
 
@@ -76,7 +76,7 @@ def get_travel_by_id(travel_id: int):
 
 
 def update(travel_data, travel_id):
-    data = TravelSchema().load(travel_data)
+    data = TravelPutSchema().load(travel_data)
     db.session.query(Travel).filter_by(id_travel=travel_id).update(data)
     db.session.commit()
     db.session.close()
