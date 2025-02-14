@@ -2,7 +2,7 @@ from flask import current_app
 import sqlalchemy
 from src.api import db
 from src.api.expense.schema import ExpenseSchema
-from src.api.travel.schema import TravelSchema
+from src.api.travel.schema import TravelPutSchema, TravelSchema
 from src.models import Expense, Travel
 from src.api.exception import DBInsertException
 
