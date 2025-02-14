@@ -1,8 +1,9 @@
 from flask import current_app
 import sqlalchemy
 from src.api import db
+from src.api.expense.schema import ExpenseSchema
 from src.api.travel.schema import TravelSchema
-from src.models import Travel
+from src.models import Expense, Travel
 from src.api.exception import DBInsertException
 
 def create_travel(user_id, project_id, travel_data: dict) -> int:
@@ -49,3 +50,31 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
             db.session.close()
         raise DBInsertException()
 
+
+
+def get_travels(user_id):
+    travels_expenses_tuple = (
+        db.session.query(Travel, Expense)
+        .outerjoin(Expense, Travel.id_travel == Expense.id_travel)
+        .filter(Travel.id_user == user_id)
+        .all()
+    )
+
+    list_travels = []
+    for travel, expense in travels_expenses_tuple:
+        travel_data = TravelSchema().dump(travel)
+        expense_data = ExpenseSchema().dump(expense) if expense else None
+
+        existing_travel = next((t for t in list_travels if t["id_travel"] == travel_data["id_travel"]), None)
+
+        if existing_travel:
+            if expense_data:
+                existing_travel["list_expenses"].append(expense_data)
+                existing_travel["total_expense"] += expense_data["amount"]
+        else:
+            travel_data["list_expenses"] = [expense_data] if expense_data else []
+            travel_data["total_expense"] = expense_data["amount"] if expense_data else 0.0
+            list_travels.append(travel_data)
+
+    db.session.close()
+    return list_travels
