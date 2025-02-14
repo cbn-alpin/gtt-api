@@ -1,6 +1,5 @@
 from marshmallow import Schema, fields
 
-from src.api.user.schema import UserSchema
 
 class TravelSchema(Schema):
     id_travel = fields.Integer(required=False)
