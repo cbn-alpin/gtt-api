@@ -89,7 +89,7 @@ def update_user(data, user_id):
         abort(403, description="Forbiden, can't change the role to admin")
 
     if user.get("password", False):
-        user["passord"] = hashlib.md5(user["password"].encode('utf-8')).hexdigest()
+        user["password"] = hashlib.md5(user["password"].encode('utf-8')).hexdigest()
 
     db.session.query(User).filter_by(id_user=user_id).update(user)
     db.session.commit()
