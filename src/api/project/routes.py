@@ -109,6 +109,7 @@ def delete_project(project_id: int):
         return response
 
 @resources.route('/api/projects/gefiproj', methods=['GET'])
+@admin_required
 def get_gefiproj_project():
     config = get_config()
     url = config.GEFIPROJ_URL
