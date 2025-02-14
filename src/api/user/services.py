@@ -42,7 +42,7 @@ def create_user(data: dict) -> int:
             first_name=user_data['first_name'],
             last_name=user_data['last_name'],
             is_admin=user_data.get('is_admin', False),
-            password=hashlib.md5(user_data["passord"].encode('utf-8')).hexdigest()
+            password=hashlib.md5(user_data["password"].encode('utf-8')).hexdigest()
         )
 
         db.session.add(user)
