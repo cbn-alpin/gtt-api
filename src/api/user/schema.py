@@ -8,3 +8,11 @@ class UserSchema(Schema):
     first_name = fields.String()
     last_name = fields.String()
     is_admin = fields.Boolean()
+
+
+class UserInputSchema(Schema):
+    password= fields.String()
+    email = fields.String()
+    first_name = fields.String()
+    last_name = fields.String()
+    is_admin = fields.Boolean()
