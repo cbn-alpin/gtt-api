@@ -2,8 +2,8 @@ from marshmallow import Schema, fields
 
 class TravelSchema(Schema):
     id_travel = fields.Integer(required=False)
-    start_date = fields.Date(required=True)
-    end_date = fields.Date(required=False)
+    start_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=True)
+    end_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=False)
     start_place = fields.String(required=True)
     return_place = fields.String(required=True)
     status = fields.String(required=False)
