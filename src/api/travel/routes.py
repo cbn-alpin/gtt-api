@@ -11,11 +11,10 @@ resources = Blueprint('travels', __name__)
 @user_required
 def post_travel(user_id:int, project_id:int):
     data = request.get_json()
-
     current_app.logger.debug('In POST /api/user/<int:user_id>/project/<int:project_id>/travels/')
     if data.get('start_date') and data.get('end_date'):
         try:
-            if datetime.strptime(data.get('start_date'), "%Y-%m-%d") > datetime.strptime(data.get('end_date'), "%Y-%m-%d"):
+            if datetime.strptime(data.get('start_date'), '%d/%m/%Y %H:%M:%S') > datetime.strptime(data.get('end_date'), '%d/%m/%Y %H:%M:%S'):
                 abort(400, description="Start date after end date")
         except ValueError:
             abort(400, description="Invalid date format")
