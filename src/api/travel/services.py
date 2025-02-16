@@ -3,7 +3,7 @@ import sqlalchemy
 from src.api import db
 from src.api.expense.schema import ExpenseSchema
 from src.api.travel.schema import TravelPutSchema, TravelSchema
-from src.models import Expense, Travel
+from src.models import Expense, Project, Travel
 from src.api.exception import DBInsertException
 
 def create_travel(user_id, project_id, travel_data: dict) -> int:
@@ -20,6 +20,7 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
             purpose=travel.get('purpose'),
             start_municipality=travel.get('start_municipality'),
             end_municipality=travel.get('end_municipality'),
+            night_municipality=travel.get('night_municipality'),
             destination=travel.get('destination'),
             night_count=travel.get('night_count'),
             meal_count=travel.get('meal_count'),
@@ -54,16 +55,20 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
 
 def get_travels(user_id):
     travels_expenses_tuple = (
-        db.session.query(Travel, Expense)
+        db.session.query(Travel, Expense, Project.id_project, Project.code)
         .outerjoin(Expense, Travel.id_travel == Expense.id_travel)
+        .outerjoin(Project, Travel.id_project == Project.id_project)
         .filter(Travel.id_user == user_id)
         .all()
     )
 
     list_travels = []
-    for travel, expense in travels_expenses_tuple:
+    for travel, expense, id_project, project_code in travels_expenses_tuple:
         travel_data = TravelSchema().dump(travel)
         expense_data = ExpenseSchema().dump(expense) if expense else None
+
+        travel_data["id_project"] = id_project
+        travel_data["project_code"] = project_code
 
         existing_travel = next((t for t in list_travels if t["id_travel"] == travel_data["id_travel"]), None)
 
