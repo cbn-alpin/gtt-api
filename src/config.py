@@ -38,6 +38,9 @@ class Config:
     JWT_EXPIRES_IN: int
     JWT_SECRET: str
     JWT_TEST_TOKEN: str
+    GEFIPROJ_URL: str
+    GEFIPROJ_LOGIN: str
+    GEFIPROJ_PASSWORD: str
 
 
     def get_engine_uri(self, env: str = "test"):
