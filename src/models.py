@@ -108,6 +108,7 @@ class Travel(Base):
     purpose = Column(String(50), nullable=False)
     start_municipality = Column(String(50), nullable=False)
     end_municipality = Column(String(50), nullable=False)
+    night_municipality = Column(String(50), nullable=True)
     destination = Column(String(50), nullable=False)
     night_count = Column(SmallInteger, nullable=False)
     meal_count = Column(SmallInteger, nullable=True)
@@ -120,7 +121,7 @@ class Travel(Base):
     id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
 
     def __init__(self, start_date, end_date, start_place, return_place, status, purpose, id_user, id_project,
-                 start_municipality, end_municipality, destination, night_count, meal_count, start_km, end_km,
+                 start_municipality, end_municipality, night_municipality, destination, night_count, meal_count, start_km, end_km,
                  license_vehicle, comment=None, comment_vehicle=None):
         self.start_date = start_date
         self.end_date = end_date
@@ -132,6 +133,7 @@ class Travel(Base):
         self.id_project = id_project
         self.start_municipality = start_municipality
         self.end_municipality = end_municipality
+        self.night_municipality = night_municipality
         self.destination = destination
         self.night_count = night_count
         self.meal_count = meal_count
