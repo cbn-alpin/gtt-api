@@ -113,7 +113,7 @@ RUN pip install --no-cache-dir --user gunicorn==21.2.0
 
 ENV PATH="$PATH:${HOME}/.local/bin"
 
-CMD [ "gunicorn", "--bind", "0.0.0.0:5001", "src.main:api" ]
+ENTRYPOINT ["/home/app/web/entrypoint.sh"]
 
 HEALTHCHECK \
     --interval=30s \
