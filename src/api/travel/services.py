@@ -2,8 +2,8 @@ from flask import current_app
 import sqlalchemy
 from src.api import db
 from src.api.expense.schema import ExpenseSchema
-from src.api.travel.schema import TravelSchema
-from src.models import Expense, Travel
+from src.api.travel.schema import TravelPutSchema, TravelSchema
+from src.models import Expense, Project, Travel
 from src.api.exception import DBInsertException
 
 def create_travel(user_id, project_id, travel_data: dict) -> int:
@@ -20,6 +20,7 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
             purpose=travel.get('purpose'),
             start_municipality=travel.get('start_municipality'),
             end_municipality=travel.get('end_municipality'),
+            night_municipality=travel.get('night_municipality'),
             destination=travel.get('destination'),
             night_count=travel.get('night_count'),
             meal_count=travel.get('meal_count'),
@@ -51,19 +52,22 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
         raise DBInsertException()
 
 
-
 def get_travels(user_id):
     travels_expenses_tuple = (
-        db.session.query(Travel, Expense)
+        db.session.query(Travel, Expense, Project.id_project, Project.code)
         .outerjoin(Expense, Travel.id_travel == Expense.id_travel)
+        .outerjoin(Project, Travel.id_project == Project.id_project)
         .filter(Travel.id_user == user_id)
         .all()
     )
 
     list_travels = []
-    for travel, expense in travels_expenses_tuple:
+    for travel, expense, id_project, project_code in travels_expenses_tuple:
         travel_data = TravelSchema().dump(travel)
         expense_data = ExpenseSchema().dump(expense) if expense else None
+
+        travel_data["id_project"] = id_project
+        travel_data["project_code"] = project_code
 
         existing_travel = next((t for t in list_travels if t["id_travel"] == travel_data["id_travel"]), None)
 
@@ -78,3 +82,53 @@ def get_travels(user_id):
 
     db.session.close()
     return list_travels
+
+
+def get_travel_by_id(travel_id: int):
+    travel_expenses = (
+        db.session.query(Travel, Expense)
+        .outerjoin(Expense, Travel.id_travel == Expense.id_travel)
+        .filter(Travel.id_travel == travel_id)
+        .all()
+    )
+
+    travel = None
+    expenses = []
+
+    for travel_object, expense_object in travel_expenses:
+        if not travel:
+            travel = TravelSchema().dump(travel_object)
+
+        if expense_object:
+            expense = ExpenseSchema().dump(expense_object)
+            expenses.append(expense)
+
+    travel["list_expenses"] = expenses if expenses else None
+
+    db.session.close()
+    return travel
+
+
+def update(travel_data, travel_id):
+    data = TravelPutSchema().load(travel_data)
+    db.session.query(Travel).filter_by(id_travel=travel_id).update(data)
+    db.session.commit()
+    db.session.close()
+    return get_travel_by_id(travel_id)
+
+
+def delete(travel_id: int):
+    try:
+        db.session.query(Travel).filter_by(id_travel=travel_id).delete()
+        db.session.commit()
+    except Exception as error:
+        db.session.rollback()
+        current_app.logger.error(f"TravelDBService - delete : {error}")
+        raise
+    except ValueError as error:
+        db.session.rollback()
+        current_app.logger.error(f"TravelDBService - delete : {error}")
+        raise
+    finally:
+        if db.session is not None:
+            db.session.close()
