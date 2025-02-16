@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
 from src.api.auth.services import user_required
-from src.api.travel.services import create_travel, get_travel_by_id, get_travels, update
+from src.api.travel.services import create_travel, delete, get_travel_by_id, get_travels, update
 
 resources = Blueprint('travels', __name__)
 
@@ -55,3 +55,22 @@ def update_travel(travel_id: int, user_id: int):
     response = update(posted_data, travel_id)
     response = jsonify(response), 200
     return response
+
+@resources.route('/api/travels/<int:travel_id>/user/<int:user_id>', methods=['DELETE'])
+#@user_required
+def delete_project(travel_id: int, user_id: int):
+    current_app.logger.info('In DELETE /api/travels/<int:travel_id>/user/<int:user_id>')
+    try:
+        existing_travel = get_travel_by_id(travel_id)
+        if existing_travel.get('id_user') != user_id:  
+            abort(403, description="Unauthorized to update this travel")
+        response = delete(travel_id)
+        response = jsonify(response), 200
+    except ValueError as error:
+        current_app.logger.error(error)
+        response = jsonify(error.args[0]), error.args[1]
+    except Exception as e:
+        current_app.logger.error(e)
+        response = jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
+    finally:
+        return response

@@ -52,7 +52,6 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
         raise DBInsertException()
 
 
-
 def get_travels(user_id):
     travels_expenses_tuple = (
         db.session.query(Travel, Expense, Project.id_project, Project.code)
@@ -116,3 +115,20 @@ def update(travel_data, travel_id):
     db.session.commit()
     db.session.close()
     return get_travel_by_id(travel_id)
+
+
+def delete(travel_id: int):
+    try:
+        db.session.query(Travel).filter_by(id_travel=travel_id).delete()
+        db.session.commit()
+    except Exception as error:
+        db.session.rollback()
+        current_app.logger.error(f"TravelDBService - delete : {error}")
+        raise
+    except ValueError as error:
+        db.session.rollback()
+        current_app.logger.error(f"TravelDBService - delete : {error}")
+        raise
+    finally:
+        if db.session is not None:
+            db.session.close()
