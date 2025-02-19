@@ -125,7 +125,7 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
     return list_projects
 
 
-def get_user_project_actions(project_id):
+def get_user_project_actions_time_entries(project_id):
     project = (
         db.session.query(Project)
         .filter(Project.id_project == project_id)
