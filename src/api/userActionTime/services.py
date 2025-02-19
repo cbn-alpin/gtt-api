@@ -125,47 +125,39 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
     return list_projects
 
 
-def get_user_project_actions(project_id):
-    project_info = (
-        db.session.query(Project.id_project, Project.name, Project.start_date, Project.end_date)
+def get_user_project_actions_time_entries(project_id):
+    project = (
+        db.session.query(Project)
         .filter(Project.id_project == project_id)
         .first()
     )
     
-    if not project_info:
+    if not project:
         return None
     
-    results = (
-        db.session.query(
-            User.first_name,
-            User.last_name,
-            Action.numero_action,
-            Action.name,
-            func.sum(UserActionTime.duration).label("total_hours")
-        )
-        .select_from(UserActionTime)
-        .join(User, UserActionTime.id_user == User.id_user)
-        .join(Action, UserActionTime.id_action == Action.id_action)
-        .join(Project, Action.id_project == Project.id_project)
-        .filter(Project.id_project == project_id)
-        .group_by(User.id_user, Action.id_action, User.first_name, User.last_name, Action.numero_action, Action.name)
-        .all()
-    )
-    
-    return {
-        "id_project": project_info.id_project,
-        "name_project": project_info.name,
-        "date_start": project_info.start_date.strftime('%Y-%m-%d'),
-        "date_end": project_info.end_date.strftime('%Y-%m-%d') if project_info.end_date else None,
-        "actions": [
-            {
-                "user_name": f"{row.first_name} {row.last_name}",
-                "numero_action": row.numero_action,
-                "name_action": row.name,
-                "total_hours": float(row.total_hours)
-            }
-            for row in results
-        ]
+    response = {
+        "id_project": project.id_project,
+        "name_project": project.name,
+        "numero_project": project.code,
+        "time_entries": []
     }
+    
+    actions = db.session.query(Action).filter(Action.id_project == project_id).all()
+    for action in actions:
+        time_entries = db.session.query(UserActionTime).filter(UserActionTime.id_action == action.id_action).all()
+        for time_entry in time_entries:
+            user = db.session.query(User).filter(User.id_user == time_entry.id_user).first()
+            if user:
+                response["time_entries"].append({
+                    "id_user": user.id_user,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "numero_action": action.numero_action,
+                    "name_action": action.name,
+                    "date": time_entry.date.strftime("%Y-%m-%d"),
+                    "duration": float(time_entry.duration)
+                })
+    
+    return response
 
 

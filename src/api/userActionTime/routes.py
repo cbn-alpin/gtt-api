@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, current_app, request, jsonify, abort
-from src.api.userActionTime.services import create_or_update_user_action_time, get_user_project_actions, get_user_projects_time_by_id
+from src.api.userActionTime.services import create_or_update_user_action_time, get_user_project_actions_time_entries, get_user_projects_time_by_id
 from src.api.auth.services import user_required
 from src.models import User
 
@@ -42,9 +42,9 @@ def post_put_user_time(user_id:int):
     return jsonify({'message': 'time saved', 'action': action_id}), 201
 
 @resources.route('/api/project/<int:project_id>/actions', methods=['GET'])
-def get_project_actions(project_id):
+def get_project_actions_time_entries(project_id):
     try:
-        response = get_user_project_actions(project_id)
+        response = get_user_project_actions_time_entries(project_id)
         return jsonify(response), 200
     except ValueError as error:
         current_app.logger.error(error)
