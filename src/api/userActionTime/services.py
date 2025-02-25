@@ -13,7 +13,7 @@ from src.models import Action, Project, User, UserAction, UserActionTime
 from sqlalchemy import func, literal_column, and_
 
 def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):
-    if duration < 0 or duration > 24:
+    if duration <= 0 or duration >= 24:
         abort(400, description="Duration must be between 0 and 24.")
     existing_entry = db.session.query(UserActionTime).filter_by(
         id_user=id_user,
@@ -131,17 +131,17 @@ def get_user_project_actions_time_entries(project_id):
         .filter(Project.id_project == project_id)
         .first()
     )
-    
+
     if not project:
         return None
-    
+
     response = {
         "id_project": project.id_project,
         "name_project": project.name,
         "numero_project": project.code,
         "time_entries": []
     }
-    
+
     actions = db.session.query(Action).filter(Action.id_project == project_id).all()
     for action in actions:
         time_entries = db.session.query(UserActionTime).filter(UserActionTime.id_action == action.id_action).all()
@@ -157,7 +157,7 @@ def get_user_project_actions_time_entries(project_id):
                     "date": time_entry.date.strftime("%Y-%m-%d"),
                     "duration": float(time_entry.duration)
                 })
-    
+
     return response
 
 
