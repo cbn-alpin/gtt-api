@@ -23,17 +23,16 @@ class TravelSchema(Schema):
     id_user = fields.Integer(required=False)
 
 class TravelPutSchema(Schema):
-    id_travel = fields.Integer(required=False)
-    start_date = fields.Date(required=True)
-    end_date = fields.Date(required=False)
+    start_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=False)
+    end_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=False)
     start_place = fields.String(required=True)
     return_place = fields.String(required=True)
     status = fields.String(required=False)
-    purpose = fields.String(required=True)
-    start_municipality = fields.String(required=True)
-    end_municipality = fields.String(required=True)
+    purpose = fields.String(required=False)
+    start_municipality = fields.String(required=False)
+    end_municipality = fields.String(required=False)
     night_municipality = fields.String(required=True)
-    destination = fields.String(required=True)
+    destination = fields.String(required=False)
     night_count = fields.Integer(required=False)
     meal_count = fields.Integer(required=False)
     comment = fields.String(required=False)
@@ -41,6 +40,5 @@ class TravelPutSchema(Schema):
     comment_vehicle = fields.String(required=False)
     start_km = fields.Integer(required=False)
     end_km = fields.Integer(required=False)
-
 
 
