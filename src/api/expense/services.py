@@ -2,17 +2,17 @@ from flask import current_app
 import sqlalchemy
 from src.api import db
 from src.api.exception import DBInsertException
-from src.api.expense.schema import ExpensePostSchema, ExpenseSchema
+from src.api.expense.schema import ExpensePostSchema, ExpenseTravelSchema
 from src.models import Expense
 
-def create_expense(expense: dict) -> int:
+def create_expense(expense: dict, travel_id:int) -> int:
     try:
         expense = ExpensePostSchema().load(expense)
         new_expense = Expense(
             name=expense['name'],
             comment=expense.get('comment'),
             amount=expense.get('amount'),
-            id_travel=expense.get('id_travel')
+            id_travel=travel_id
         )
 
         db.session.add(new_expense)
@@ -32,3 +32,17 @@ def create_expense(expense: dict) -> int:
         if db.session is not None:
             db.session.close()
         raise DBInsertException()
+    
+def get_expense_by_id(expense_id : int):
+    action_object = db.session.query(Expense).filter(Expense.id_expense == expense_id).first()
+    schema = ExpenseTravelSchema()
+    action= schema.dump(action_object)
+    db.session.close()
+    return action
+    
+def update(expense_data, expense_id):
+    data = ExpensePostSchema().load(expense_data)
+    db.session.query(Expense).filter_by(id_expense=expense_id).update(data)
+    db.session.commit()
+    db.session.close()
+    return get_expense_by_id(expense_id)

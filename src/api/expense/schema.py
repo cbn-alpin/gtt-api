@@ -7,8 +7,13 @@ class ExpenseSchema(Schema):
     comment = fields.String()
     amount= fields.Number()
 
-class ExpensePostSchema(Schema):
+class ExpenseTravelSchema(Schema):
     name = fields.String()
     comment = fields.String()
     amount= fields.Number()
     id_travel=fields.Integer()
+
+class ExpensePostSchema(Schema):
+    name = fields.String()
+    comment = fields.String()
+    amount= fields.Number()
