@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import current_app
 import sqlalchemy
 from src.api import db
@@ -10,7 +11,7 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
     try:
         schema = TravelSchema()
         travel = schema.load(travel_data)
-        
+
         new_travel = Travel(
             status=travel['status'],
             start_date=travel.get('start_date'),
@@ -52,14 +53,18 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
         raise DBInsertException()
 
 
-def get_travels(user_id):
-    travels_expenses_tuple = (
-        db.session.query(Travel, Expense, Project.id_project, Project.code)
-        .outerjoin(Expense, Travel.id_travel == Expense.id_travel)
-        .outerjoin(Project, Travel.id_project == Project.id_project)
-        .filter(Travel.id_user == user_id)
-        .all()
-    )
+def get_travels(user_id, date_start: str = None, date_end: str = None):
+    query = db.session.query(Travel, Expense, Project.id_project, Project.code)
+    query = query.outerjoin(Expense, Travel.id_travel == Expense.id_travel)
+    query = query.outerjoin(Project, Travel.id_project == Project.id_project)
+    query = query.filter(Travel.id_user == user_id)
+
+    if date_start:
+            query = query.filter(Travel.start_date >= datetime.strptime(date_start, '%d/%m/%Y'))
+    if date_end:
+        query = query.filter(Travel.end_date <= datetime.strptime(date_end, '%d/%m/%Y'))
+
+    travels_expenses_tuple = query.all()
 
     list_travels = []
     for travel, expense, id_project, project_code in travels_expenses_tuple:
