@@ -13,7 +13,7 @@ from src.models import Action, Project, User, UserAction, UserActionTime
 from sqlalchemy import func, literal_column, and_
 
 def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):
-    if duration <= 0 or duration >= 24:
+    if duration < 0 or duration > 24:
         abort(400, description="Duration must be between 0 and 24.")
     existing_entry = db.session.query(UserActionTime).filter_by(
         id_user=id_user,
