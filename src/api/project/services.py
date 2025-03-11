@@ -91,7 +91,7 @@ def get_all_projects():
 
     db.session.close()
     return list_projects
-   
+
 
 def get_archived_project():
     projects = []
@@ -115,12 +115,11 @@ def get_archived_project():
 
 def update(project, project_id):
     existing_project = get_project_by_id(project_id)
-    print(existing_project)
     if not existing_project:
         abort(404, description="Project not found")
-    data = ProjectSchema().load(project, unknown=EXCLUDE)
+    data = ProjectUpdateSchema().load(project)
     if data.get("is_archived", False):
-        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%Y-%m-%d").date()  > date.today():
+        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%Y/%m/%d").date()  > date.today():
             abort(400, description="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
