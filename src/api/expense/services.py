@@ -46,3 +46,22 @@ def update(expense_data, expense_id):
     db.session.commit()
     db.session.close()
     return get_expense_by_id(expense_id)
+
+def delete(expense_id: int):
+    try:
+        db.session.query(Expense).filter_by(id_expense=expense_id).delete()
+        db.session.commit()
+
+        db.session.close()
+        return {'message': f'La note du frais \'{expense_id}\' a été supprimé'}
+    except Exception as error:
+        db.session.rollback()
+        current_app.logger.error(f"ProjectDBService - delete : {error}")
+        raise
+    except ValueError as error:
+        db.session.rollback()
+        current_app.logger.error(f"ProjectDBService - delete : {error}")
+        raise
+    finally:
+        if db.session is not None:
+            db.session.close()

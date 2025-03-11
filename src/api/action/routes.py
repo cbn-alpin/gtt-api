@@ -39,7 +39,7 @@ def delete_action(action_id: int):
         response = jsonify(error.args[0]), error.args[1]
     except Exception as e:
         current_app.logger.error(e)
-        response = jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
+        response = jsonify({'message': 'Une erreur est survenue lors de la suppression de l\'action'}), 500
     finally:
         return response
 
