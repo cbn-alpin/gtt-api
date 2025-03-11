@@ -119,7 +119,7 @@ def update(project, project_id):
         abort(404, description="Project not found")
     data = ProjectUpdateSchema().load(project)
     if data.get("is_archived", False):
-        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%Y/%m/%d").date()  > date.today():
+        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%d/%m/%Y").date()  > date.today():
             abort(400, description="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()

@@ -8,8 +8,8 @@ class ProjectSchema(Schema):
     code = fields.String()
     name = fields.String()
     description = fields.String()
-    start_date = fields.Date(format='%Y/%m/%d', required=False)
-    end_date = fields.Date(format='%Y/%m/%d', required=False)
+    start_date = fields.Date(format='%d/%m/%Y', required=False)
+    end_date = fields.Date(format='%d/%m/%Y', required=False)
     is_archived = fields.Boolean()
     list_action =  fields.Nested(ActionSchema)
 
@@ -19,8 +19,8 @@ class ProjectUpdateSchema(Schema):
     code = fields.String(required=False)
     name = fields.String(required=False)
     description = fields.String(allow_none=True, required=False)
-    start_date = fields.Date(format='%Y/%m/%d', required=False)
-    end_date = fields.Date(format='%Y/%m/%d', required=False)
+    start_date = fields.Date(format='%d/%m/%Y', required=False)
+    end_date = fields.Date(format='%d/%m/%Y', required=False)
     is_archived = fields.Boolean(required=False)
 
 class ProjectInputSchema(Schema):

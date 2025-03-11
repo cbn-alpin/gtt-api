@@ -21,7 +21,7 @@ def post_project():
 
     if data.get('start_date') and data.get('end_date'):
         try:
-            if datetime.strptime(data.get('start_date'), "%Y-%m-%d") > datetime.strptime(data.get('end_date'), "%Y-%m-%d"):
+            if datetime.strptime(data.get('start_date'), "%%d/%m/%Y") > datetime.strptime(data.get('end_date'), "%d/%m/%Y"):
                 abort(400, description="Start date after end date")
         except ValueError:
             abort(400, description="Invalid date format")
@@ -88,6 +88,12 @@ def get_project_by_id(project_id: int):
 def update_project(project_id: int):
     current_app.logger.info(f'In PUT /api/projects/<int:project_id>')
     posted_data = request.get_json()
+    if posted_data.get('start_date') and posted_data.get('end_date'):
+        try:
+            if datetime.strptime(posted_data.get('start_date'), "%%d/%m/%Y") > datetime.strptime(posted_data.get('end_date'), "%d/%m/%Y"):
+                abort(400, description="Start date after end date")
+        except ValueError:
+            abort(400, description="Invalid date format")
     response = update(posted_data, project_id)
     response = jsonify(response), 200
     return response
