@@ -49,7 +49,7 @@ def update_expense(expense_id: int, user_id: int):
 
 @resources.route('/api/expenses/<int:expense_id>/user/<int:user_id>', methods=['DELETE'])
 @user_required
-def delete_action(expense_id: int, user_id:int):
+def delete_expense(expense_id: int, user_id:int):
     existing_expense = get_expense_by_id(expense_id)
     if not existing_expense:
         abort(404, description="Expense not found")
