@@ -35,7 +35,7 @@ def get_user_projects(user_id: int):
 def post_put_user_time(user_id:int):
     data = request.get_json()
     current_app.logger.debug('In POST /api/user/<int:user_id>/projects/times')
-    if not data.get('duration') or not data.get('date'):
+    if data.get('duration', None) == None or not data.get('date'):
         abort(400, description="duration and date are required fields")
 
     action_id = create_or_update_user_action_time(data.get('date'), data.get('duration'), user_id, data.get('id_action'))
