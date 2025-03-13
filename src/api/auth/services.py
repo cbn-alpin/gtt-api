@@ -55,7 +55,7 @@ def exchange_code_for_id_token(code, client_id, client_secret, redirect_uri, tok
         "code": code,
         "client_id": client_id,
         "client_secret": client_secret,
-        "redirect_uri": redirect_uri,
+        "redirect_uri": "postmessage",
         "grant_type": "authorization_code"
     }
     token_response = requests.post(token_endpoint, data=payload)
@@ -81,10 +81,10 @@ def verify_google_token(google_token, client_id):
 def google_auth(data):
     """
     Handles both One Tap (ID token) and Popup (authorization code) flows.
-    
+
     - If "token" is provided, it verifies that token directly (One Tap flow).
     - If "code" is provided, it exchanges the code for tokens, then verifies the returned ID token (Popup flow).
-    
+
     After verifying the token, it extracts user info, looks up or creates the user in the database,
     then issues JWT tokens and returns the user data.
     """
@@ -126,7 +126,7 @@ def google_auth(data):
             role = "admin"
         else:
             role = "user"
-        identity = data['login']
+        identity = user.email
 
         access_token = create_access_token(identity=identity, additional_claims={"role": role, "user_id": user.id_user})
         refresh_token = create_refresh_token(identity=identity)
