@@ -13,6 +13,7 @@ def auth_google():
     data = request.get_json()
     return google_auth(data)
 
+
 @resources.route("/api/auth/gtt", methods=["POST"])
 def auth_gtt():
     data = request.get_json()
