@@ -8,7 +8,7 @@ import sqlalchemy
 from src.api import db
 
 from src.api.action.schema import ActionSchema
-from src.api.exception import DBInsertException, DeleteError
+from src.api.exception import DBInsertException, DeleteError, UpdateError
 from src.api.project.schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
 from src.models import Action, Project, UserActionTime
 
@@ -116,11 +116,11 @@ def get_archived_project():
 def update(project, project_id):
     existing_project = get_project_by_id(project_id)
     if not existing_project:
-        abort(404, description="Project not found")
+        raise UpdateError(status_code=404, message="Project not found")
     data = ProjectUpdateSchema().load(project)
     if data.get("is_archived", False):
         if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%d/%m/%Y").date()  > date.today():
-            abort(400, description="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
+            raise UpdateError(status_code=400, message="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
     db.session.close()

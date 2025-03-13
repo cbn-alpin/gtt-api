@@ -3,7 +3,7 @@ from flask import Blueprint, current_app, request, jsonify, abort
 from flask_jwt_extended import jwt_required
 import requests
 from src.api.auth.services import admin_required
-from src.api.exception import DeleteError
+from src.api.exception import DeleteError, UpdateError
 from src.api.project.services import create_project, get_all_projects, get_archived_project, update, delete, get_project_by_id as project_by_id
 from src.config import get_config
 from src.models import Project
@@ -92,12 +92,16 @@ def update_project(project_id: int):
     if posted_data.get('start_date') and posted_data.get('end_date'):
         try:
             if datetime.strptime(posted_data.get('start_date'), "%d/%m/%Y") > datetime.strptime(posted_data.get('end_date'), "%d/%m/%Y"):
-                abort(400, description="Start date after end date")
+                return "Start date after end date", 400
         except ValueError:
-            abort(400, description="Invalid date format")
-    response = update(posted_data, project_id)
-    response = jsonify(response), 200
-    return response
+            return "Invalid date format", 400
+    try:
+        response = update(posted_data, project_id)
+    except UpdateError as error:
+        return error.message, error.status_code
+    except Exception as error:
+        return "Error during the modification", 400
+    return jsonify(response), 200
 
 @resources.route('/api/projects/<int:project_id>', methods=['DELETE'])
 @admin_required

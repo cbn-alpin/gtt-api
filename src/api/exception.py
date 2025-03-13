@@ -30,3 +30,11 @@ class DeleteError(Exception):
         self.message = message
         self.status_code = status_code
         super().__init__(self.message)
+
+class UpdateError(Exception):
+    """Exception raised when there is missing field."""
+
+    def __init__(self, message="Missing field", status_code=400):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(self.message)
