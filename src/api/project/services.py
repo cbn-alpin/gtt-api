@@ -8,7 +8,7 @@ import sqlalchemy
 from src.api import db
 
 from src.api.action.schema import ActionSchema
-from src.api.exception import DBInsertException
+from src.api.exception import DBInsertException, DeleteError
 from src.api.project.schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
 from src.models import Action, Project, UserActionTime
 
@@ -135,15 +135,11 @@ def delete(project_id: int):
             .scalar()
         )
         if total_duration and total_duration > 0 :
-            return {'message': f'Le projet \'{project_id}\' ne peut pas être supprimé car des saisies du temps y sont associés'}, 403
+            raise DeleteError({'message': f'Le projet \'{project_id}\' ne peut pas être supprimé car des saisies du temps y sont associés'})
 
         db.session.query(Project).filter_by(id_project=project_id).delete()
         db.session.commit()
     except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - delete : {error}")
-        raise
-    except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")
         raise

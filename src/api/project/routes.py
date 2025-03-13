@@ -3,6 +3,7 @@ from flask import Blueprint, current_app, request, jsonify, abort
 from flask_jwt_extended import jwt_required
 import requests
 from src.api.auth.services import admin_required
+from src.api.exception import DeleteError
 from src.api.project.services import create_project, get_all_projects, get_archived_project, update, delete, get_project_by_id as project_by_id
 from src.config import get_config
 from src.models import Project
@@ -104,15 +105,16 @@ def delete_project(project_id: int):
     current_app.logger.info('In DELETE /api/projects/<int:project_id>')
     try:
         response = delete(project_id)
-        response = jsonify(response), 200
+        return jsonify(response), 200
+    except DeleteError as error:
+        current_app.logger.error(error)
+        return jsonify(error.args[0]), 403
     except ValueError as error:
         current_app.logger.error(error)
-        response = jsonify(error.args[0]), error.args[1]
+        return jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), error.args[1]
     except Exception as e:
         current_app.logger.error(e)
-        response = jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
-    finally:
-        return response
+        return jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
 
 @resources.route('/api/projects/gefiproj', methods=['GET'])
 @admin_required
