@@ -137,7 +137,8 @@ def google_auth(data):
             'email': user.email,
             'is_admin': user.is_admin,
             'access_token': access_token,
-            'refresh_token': refresh_token
+            'refresh_token': refresh_token,
+            'picture': idinfo.get("picture")
         }
     else:
         raise NotFoundError("No user found for this login/password")
