@@ -1,5 +1,5 @@
 from flask import current_app, jsonify,abort
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt
 from src import api
 from src.api import user
 from src.api.auth.schema import AuthInputSchema
@@ -8,9 +8,8 @@ from src.api import db
 from src.config import get_config
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-import requests
 import hashlib
-
+import requests
 
 from functools import wraps
 
@@ -48,24 +47,10 @@ def gtt_auth(data: AuthInputSchema) -> user :
     else:
         raise NotFoundError("No user found for this login/password")
 
-def google_auth(data):
+def exchange_code_for_id_token(code, client_id, client_secret, redirect_uri, token_endpoint):
     """
-    Handles only the popup flow (authorization code) using a mock user.
-    Expects 'data' to have a 'code' field.
+    Exchanges an authorization code for tokens and returns the Google ID token.
     """
-    config = get_config()
-    client_id = config.GS_CLIENT_ID
-    client_secret = config.GS_PRIVATE_KEY
-    token_endpoint = config.GS_TOKEN_URI
-    redirect_uri = config.GS_AUTH_URI 
-
-
-    if "code" not in data:
-        abort(400, description="Missing required field: code")
-
-    code = data["code"]
-
-    # Prepare the payload to exchange the authorization code for tokens
     payload = {
         "code": code,
         "client_id": client_id,
@@ -73,103 +58,89 @@ def google_auth(data):
         "redirect_uri": redirect_uri,
         "grant_type": "authorization_code"
     }
-
     token_response = requests.post(token_endpoint, data=payload)
     if token_response.status_code != 200:
         current_app.logger.error("Token exchange failed: %s", token_response.text)
         abort(400, description="Failed to exchange authorization code with Google.")
-
     tokens = token_response.json()
     google_id_token = tokens.get("id_token")
     if not google_id_token:
         abort(400, description="No ID token found in response from Google.")
+    return google_id_token
 
+def verify_google_token(google_token, client_id):
+    """
+    Verifies the Google ID token and returns its payload.
+    """
     try:
-        # Verify the ID token returned by Google
-        idinfo = id_token.verify_oauth2_token(google_id_token, google_requests.Request(), client_id)
+        idinfo = id_token.verify_oauth2_token(google_token, google_requests.Request(), client_id)
+        return idinfo
     except Exception as e:
         abort(400, description="Invalid Google ID token: " + str(e))
 
-    # Extract user info from the verified token
+def google_auth(data):
+    """
+    Handles both One Tap (ID token) and Popup (authorization code) flows.
+    
+    - If "token" is provided, it verifies that token directly (One Tap flow).
+    - If "code" is provided, it exchanges the code for tokens, then verifies the returned ID token (Popup flow).
+    
+    After verifying the token, it extracts user info, looks up or creates the user in the database,
+    then issues JWT tokens and returns the user data.
+    """
+    config = get_config()
+    client_id = config.GS_CLIENT_ID
+    client_secret = config.GS_PRIVATE_KEY
+    token_endpoint = config.GS_TOKEN_URI
+    redirect_uri = config.GS_AUTH_URI
+
+    # Determine which flow (One Tap vs. Popup)
+    if "token" in data:
+        # One Tap: directly verify the token
+        google_id_token = data["token"]
+    elif "code" in data:
+        # Popup: exchange code for tokens, then verify
+        google_id_token = exchange_code_for_id_token(
+            code=data["code"],
+            client_id=client_id,
+            client_secret=client_secret,
+            redirect_uri=redirect_uri,
+            token_endpoint=token_endpoint
+        )
+    else:
+        abort(400, description="Missing required field: 'token' or 'code'.")
+
+    # Verify the ID token
+    idinfo = verify_google_token(google_id_token, client_id)
+
+    # Extract user info
     email = idinfo.get("email")
-    given_name = idinfo.get("given_name", "")
-    family_name = idinfo.get("family_name", "")
 
-    # Use a mock user for testing purposes
-    mock_user = {
-        "id_user": "mock456",
-        "last_name": family_name,
-        "first_name": given_name,
-        "email": email,
-        "is_admin": False
-    }
+    # Look up or create user in DB
+    user = (
+        db.session.query(User).filter(User.email == email).first()
+    )
+    db.session.close()
+    if user:
+        if user.is_admin:
+            role = "admin"
+        else:
+            role = "user"
+        identity = data['login']
 
-    role = "admin" if mock_user["is_admin"] else "user"
-    identity = email  # Using email as the identity
-    access_token = create_access_token(identity=identity, additional_claims={"role": role, "user_id": mock_user["id_user"]})
-    refresh_token = create_refresh_token(identity=identity)
-
-    return jsonify({
-        'id_user': mock_user["id_user"],
-        'last_name': mock_user["last_name"],
-        'first_name': mock_user["first_name"],
-        'email': mock_user["email"],
-        'is_admin': mock_user["is_admin"],
-        'access_token': access_token,
-        'refresh_token': refresh_token
-    })
-    # """
-    # Handles only the One Tap flow (ID token) using a mock user.
-    # Expects 'data' to have a 'token' field.
-    # """
-    # config = get_config()
-    # client_id = config.GS_CLIENT_ID  # Ensure this is correctly set in your config
-
-    # if "token" not in data:
-    #     abort(400, description="Missing required field: token")
-    
-    # google_token = data["token"]
-    # try:
-    #     # Verify the Google ID token
-    #     idinfo = id_token.verify_oauth2_token(google_token, google_requests.Request(), client_id)
-    # except Exception as e:
-    #     abort(400, description="Invalid Google token: " + str(e))
-    
-    # # Extract user info from the verified token
-    # email = idinfo.get("email")
-    # given_name = idinfo.get("given_name", "")
-    # family_name = idinfo.get("family_name", "")
-    
-    # # Use a mock user for testing purposes (since DB isn't accessible right now)
-    # mock_user = {
-    #     "id_user": "mock123",
-    #     "last_name": family_name,
-    #     "first_name": given_name,
-    #     "email": email,
-    #     "is_admin": False  # Adjust as needed
-    # }
-    
-    # # Determine role and identity
-    # role = "admin" if mock_user["is_admin"] else "user"
-    # identity = email  # Using email as the identity
-    
-    # # Create JWT tokens using flask_jwt_extended
-    # access_token = create_access_token(
-    #     identity=identity,
-    #     additional_claims={"role": role, "user_id": mock_user["id_user"]}
-    # )
-    # refresh_token = create_refresh_token(identity=identity)
-    
-    # # Return a JSON response with mock user info and tokens
-    # return jsonify({
-    #     'id_user': mock_user["id_user"],
-    #     'last_name': mock_user["last_name"],
-    #     'first_name': mock_user["first_name"],
-    #     'email': mock_user["email"],
-    #     'is_admin': mock_user["is_admin"],
-    #     'access_token': access_token,
-    #     'refresh_token': refresh_token
-    # })
+        access_token = create_access_token(identity=identity, additional_claims={"role": role, "user_id": user.id_user})
+        refresh_token = create_refresh_token(identity=identity)
+        return {
+            'id_user': user.id_user,
+            'last_name': user.last_name,
+            'first_name': user.first_name,
+            'email': user.email,
+            'is_admin': user.is_admin,
+            'access_token': access_token,
+            'refresh_token': refresh_token
+        }
+    else:
+        raise NotFoundError("No user found for this login/password")
 
 
 def admin_required(fn):
