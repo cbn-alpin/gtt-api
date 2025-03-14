@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import current_app
 import sqlalchemy
 from src.api import db
@@ -60,9 +60,11 @@ def get_travels(user_id, date_start: str = None, date_end: str = None):
     query = query.filter(Travel.id_user == user_id)
 
     if date_start:
-            query = query.filter(Travel.start_date >= datetime.strptime(date_start, '%d/%m/%Y'))
+        query = query.filter(Travel.start_date >= datetime.strptime(date_start, '%d/%m/%Y'))
     if date_end:
-        query = query.filter(Travel.end_date <= datetime.strptime(date_end, '%d/%m/%Y'))
+        end_date = datetime.strptime(date_end, '%d/%m/%Y')
+        end_date = end_date + timedelta(days=1)
+        query = query.filter(Travel.end_date <= end_date)
 
     travels_expenses_tuple = query.all()
 
