@@ -8,7 +8,7 @@ import sqlalchemy
 from src.api import db
 
 from src.api.action.schema import ActionSchema
-from src.api.exception import DBInsertException
+from src.api.exception import DBInsertException, DeleteError, UpdateError
 from src.api.project.schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
 from src.models import Action, Project, UserActionTime
 
@@ -91,7 +91,7 @@ def get_all_projects():
 
     db.session.close()
     return list_projects
-   
+
 
 def get_archived_project():
     projects = []
@@ -115,13 +115,12 @@ def get_archived_project():
 
 def update(project, project_id):
     existing_project = get_project_by_id(project_id)
-    print(existing_project)
     if not existing_project:
-        abort(404, description="Project not found")
-    data = ProjectSchema().load(project, unknown=EXCLUDE)
+        raise UpdateError(status_code=404, message="Project not found")
+    data = ProjectUpdateSchema().load(project)
     if data.get("is_archived", False):
-        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%Y-%m-%d").date()  > date.today():
-            abort(400, description="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
+        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%d/%m/%Y").date()  > date.today():
+            raise UpdateError(status_code=400, message="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
     db.session.close()
@@ -136,15 +135,11 @@ def delete(project_id: int):
             .scalar()
         )
         if total_duration and total_duration > 0 :
-            return {'message': f'Le projet \'{project_id}\' ne peut pas être supprimé car des saisies du temps y sont associés'}, 403
+            raise DeleteError({'message': f'Le projet \'{project_id}\' ne peut pas être supprimé car des saisies du temps y sont associés'})
 
         db.session.query(Project).filter_by(id_project=project_id).delete()
         db.session.commit()
     except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - delete : {error}")
-        raise
-    except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")
         raise

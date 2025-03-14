@@ -3,6 +3,7 @@ from flask import Blueprint, current_app, request, jsonify, abort
 from flask_jwt_extended import jwt_required
 import requests
 from src.api.auth.services import admin_required
+from src.api.exception import DeleteError, UpdateError
 from src.api.project.services import create_project, get_all_projects, get_archived_project, update, delete, get_project_by_id as project_by_id
 from src.config import get_config
 from src.models import Project
@@ -21,7 +22,7 @@ def post_project():
 
     if data.get('start_date') and data.get('end_date'):
         try:
-            if datetime.strptime(data.get('start_date'), "%Y-%m-%d") > datetime.strptime(data.get('end_date'), "%Y-%m-%d"):
+            if datetime.strptime(data.get('start_date'), "%d/%m/%Y") > datetime.strptime(data.get('end_date'), "%d/%m/%Y"):
                 abort(400, description="Start date after end date")
         except ValueError:
             abort(400, description="Invalid date format")
@@ -88,9 +89,19 @@ def get_project_by_id(project_id: int):
 def update_project(project_id: int):
     current_app.logger.info(f'In PUT /api/projects/<int:project_id>')
     posted_data = request.get_json()
-    response = update(posted_data, project_id)
-    response = jsonify(response), 200
-    return response
+    if posted_data.get('start_date') and posted_data.get('end_date'):
+        try:
+            if datetime.strptime(posted_data.get('start_date'), "%d/%m/%Y") > datetime.strptime(posted_data.get('end_date'), "%d/%m/%Y"):
+                return "Start date after end date", 400
+        except ValueError:
+            return "Invalid date format", 400
+    try:
+        response = update(posted_data, project_id)
+    except UpdateError as error:
+        return error.message, error.status_code
+    except Exception as error:
+        return "Error during the modification", 400
+    return jsonify(response), 200
 
 @resources.route('/api/projects/<int:project_id>', methods=['DELETE'])
 @admin_required
@@ -98,15 +109,16 @@ def delete_project(project_id: int):
     current_app.logger.info('In DELETE /api/projects/<int:project_id>')
     try:
         response = delete(project_id)
-        response = jsonify(response), 200
+        return jsonify(response), 200
+    except DeleteError as error:
+        current_app.logger.error(error)
+        return jsonify(error.args[0]), 403
     except ValueError as error:
         current_app.logger.error(error)
-        response = jsonify(error.args[0]), error.args[1]
+        return jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), error.args[1]
     except Exception as e:
         current_app.logger.error(e)
-        response = jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
-    finally:
-        return response
+        return jsonify({'message': 'Une erreur est survenue lors de la suppression du projet'}), 500
 
 @resources.route('/api/projects/gefiproj', methods=['GET'])
 @admin_required

@@ -27,9 +27,19 @@ def post_travel(user_id:int, project_id:int):
 @user_required
 def get_travels_by_user(user_id:int):
     current_app.logger.info('In GET /api/travels/user/<int:user_id>')
+    date_start = request.args.get('date_start')
+    date_end = request.args.get('date_end')
+    if date_start and date_end:
+        if not date_end:
+            date_end = datetime.now().strftime('%d/%m/%Y')
+        try:
+            if datetime.strptime(date_start, '%d/%m/%Y') > datetime.strptime(date_end, '%d/%m/%Y'):
+                abort(400, description="Start date after end date")
+        except ValueError:
+            abort(400, description="Invalid date format")
     response = None
     try:
-        response = get_travels(user_id)
+        response = get_travels(user_id, date_start=date_start, date_end=date_end)
         response = jsonify(response), 200
         return response
     except ValueError as error:
@@ -40,15 +50,15 @@ def get_travels_by_user(user_id:int):
         current_app.logger.error(e)
         response = 'Une erreur est survenue lors de la récupération des données frais de déplacements', 400
         return response
-    
+
 @resources.route('/api/travels/<int:travel_id>/user/<int:user_id>', methods=['PUT'])
-@user_required 
+@user_required
 def update_travel(travel_id: int, user_id: int):
     existing_travel = get_travel_by_id(travel_id)
     print(existing_travel)
-    if not existing_travel:  
+    if not existing_travel:
         abort(404, description="Travel not found")
-    if existing_travel.get('id_user') != user_id:  
+    if existing_travel.get('id_user') != user_id:
         abort(403, description="Unauthorized to update this travel")
     current_app.logger.info(f'In PUT /api/travels/<int:travel_id>')
     posted_data = request.get_json()
@@ -62,7 +72,7 @@ def delete_project(travel_id: int, user_id: int):
     current_app.logger.info('In DELETE /api/travels/<int:travel_id>/user/<int:user_id>')
     try:
         existing_travel = get_travel_by_id(travel_id)
-        if existing_travel.get('id_user') != user_id:  
+        if existing_travel.get('id_user') != user_id:
             abort(403, description="Unauthorized to update this travel")
         response = delete(travel_id)
         response = jsonify(response), 200
