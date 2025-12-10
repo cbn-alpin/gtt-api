@@ -65,7 +65,7 @@ def create_api(env: str='development'):
     config = get_config()
     app = Flask(__name__, template_folder='templates')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = config.get_engine_uri(env)
+    app.config['SQLALCHEMY_DATABASE_URI'] = config.get_engine_uri()
     app.config['JWT_SECRET_KEY'] = config.JWT_SECRET
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(config.JWT_EXPIRES_IN)
     app.config['JWT_BLACKLIST_ENABLED'] = True

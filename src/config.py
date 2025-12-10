@@ -7,21 +7,11 @@ import typing
 
 @dataclasses.dataclass
 class Config:
-    DATABASE_DEV_IP: str
-    DATABASE_DEV_NAME: str
-    DATABASE_DEV_PASSWORD: str
-    DATABASE_DEV_PORT: str
-    DATABASE_DEV_USER: str
-    DATABASE_PROD_IP: str
-    DATABASE_PROD_NAME: str
-    DATABASE_PROD_PASSWORD: str
-    DATABASE_PROD_PORT: str
-    DATABASE_PROD_USER: str
-    DATABASE_TEST_IP: str
-    DATABASE_TEST_NAME: str
-    DATABASE_TEST_PASSWORD: str
-    DATABASE_TEST_PORT: str
-    DATABASE_TEST_USER: str
+    DATABASE_IP: str
+    DATABASE_NAME: str
+    DATABASE_PASSWORD: str
+    DATABASE_PORT: str
+    DATABASE_USER: str
     FLASK_APP: str
     FLASK_DEBUG: bool
     FLASK_ENV: str
@@ -43,27 +33,14 @@ class Config:
     GEFIPROJ_PASSWORD: str
 
 
-    def get_engine_uri(self, env: str = "test"):
+    def get_engine_uri(self):
         db_uri = ''
 
-        if env == 'test':
-            user = self.DATABASE_TEST_USER
-            password = self.DATABASE_TEST_PASSWORD
-            host = self.DATABASE_TEST_IP
-            port = self.DATABASE_TEST_PORT
-            name = self.DATABASE_TEST_NAME
-        elif env == 'development':
-            user = self.DATABASE_DEV_USER
-            password = self.DATABASE_DEV_PASSWORD
-            host = self.DATABASE_DEV_IP
-            port = self.DATABASE_DEV_PORT
-            name = self.DATABASE_DEV_NAME
-        elif env == 'prod':
-            user = self.DATABASE_PROD_USER
-            password = self.DATABASE_PROD_PASSWORD
-            host = self.DATABASE_PROD_IP
-            port = self.DATABASE_PROD_PORT
-            name = self.DATABASE_PROD_NAME
+        user = self.DATABASE_USER
+        password = self.DATABASE_PASSWORD
+        host = self.DATABASE_IP
+        port = self.DATABASE_PORT
+        name = self.DATABASE_NAME
 
         db_uri = f'postgresql://{user}:{password}@{host}:{port}/{name}'
         return db_uri

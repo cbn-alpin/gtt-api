@@ -17,11 +17,11 @@ Se deplacer dans le dossier du projet cloné :
 
 Créer un environnement virtuel :
 
-    python -m venv cbna_env
+    python3 -m venv venv
 
 Activer l'environnement virtuel :
 
-    ./cbna_env/bin/activate
+    source ./venv/bin/activate
 
 Installer les dépendances :
 
