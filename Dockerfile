@@ -71,11 +71,7 @@ RUN echo "runtime! defaults.vim" > /etc/vim/vimrc.local \
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 
-# COPY --from=builder /usr/src/app/config/_config.yml ./config/
-# RUN mv ./config/_config.yml ./config/config.yml
-
-# COPY --from=builder /usr/src/app/config/_google-credentials.json ./config/
-# RUN mv ./config/_google-credentials.json ./config/google-credentials.json
+COPY --from=builder /usr/src/app/alembic.ini.sample ./alembic.ini
 
 # Install dependencies
 RUN pip install --upgrade pip
