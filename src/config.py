@@ -15,19 +15,12 @@ class Config:
     FLASK_APP: str
     FLASK_DEBUG: bool
     FLASK_ENV: str
-    GS_AUTH_PROVIDER: str
     GS_AUTH_URI: str
-    GS_CLIENT_EMAIL: str
     GS_CLIENT_ID: str
-    GS_CLIENT: str
-    GS_PRIVATE_KEY_ID: str
     GS_PRIVATE_KEY: str
-    GS_PROJECT_ID: str
     GS_TOKEN_URI: str
-    GS_TYPE: str
     JWT_EXPIRES_IN: int
     JWT_SECRET: str
-    JWT_TEST_TOKEN: str
     GEFIPROJ_URL: str
     GEFIPROJ_LOGIN: str
     GEFIPROJ_PASSWORD: str
