@@ -98,8 +98,7 @@ FROM base AS development
 RUN export FLASK_APP=src/main.py
 RUN set FLASK_APP=src/main.py
 
-CMD flask run -h 0.0.0.0
-
+CMD ["flask", "run", "-h", "0.0.0.0", "-p", "5001"]
 
 #+----------------------------------------------------------------------+
 # Production
