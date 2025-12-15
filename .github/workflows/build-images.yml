@@ -20,7 +20,7 @@ jobs:
         id: build_target
         run: |
           # Définit 'production' pour main, 'development' pour develop.
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" =~ ^refs/tags/ ]]; then
             echo "TARGET=production" >> $GITHUB_OUTPUT
             echo "BUILD_TARGET: production"
           else
