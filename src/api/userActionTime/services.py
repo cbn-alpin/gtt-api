@@ -36,50 +36,44 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
     return id_action
 
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
-    start_year = datetime.strptime(date_start, '%Y-%m-%d').year
-    end_year = datetime.strptime(date_end, '%Y-%m-%d').year
 
-    if start_year != end_year:
-        raise ValueError("Start and end dates must belong to the same year.")
+    date_series = db.session.query(
+        func.generate_series(
+            literal_column(f"'{date_start}'::timestamp"),
+            literal_column(f"'{date_end}'::timestamp"),
+            "1 day",
+        ).label("date")
+    ).subquery()
 
-    date_series = (
+    projects_actions_time_tuple = (
         db.session.query(
-            func.generate_series(
-                literal_column(f"'{start_year}-01-01'::timestamp"),
-                literal_column(f"'{start_year}-12-31'::timestamp"),
-                '1 day'
-            ).label('date')
-        ).subquery()
-    )
-
-    projects_actions_time_tuple = db.session.query(
-        Project, Action, date_series.c.date,
-        func.coalesce(func.sum(UserActionTime.duration), 0).label('duration')
-    ) \
-    .join(Action, Project.id_project == Action.id_project) \
-    .join(UserAction, Action.id_action == UserAction.id_action) \
-    .join(date_series, literal_column('1=1')) \
-    .outerjoin(UserActionTime,
-        and_(UserActionTime.id_action == Action.id_action,
-             func.date(UserActionTime.date) == func.date(date_series.c.date))
-    ) \
-    .group_by(
-        Project.id_project,
-        Project.name,
-        Action.id_action,
-        Action.name,
-        date_series.c.date
-    ) \
-    .order_by(
-        Project.id_project,
-        Action.id_action,
-        date_series.c.date
-    ) \
-    .filter(UserAction.id_user == user_id,
+            Project,
+            Action,
+            date_series.c.date,
+            func.coalesce(func.sum(UserActionTime.duration), 0).label("duration"),
+        )
+        .join(Action, Project.id_project == Action.id_project)
+        .join(UserAction, Action.id_action == UserAction.id_action)
+        .join(date_series, literal_column("1=1"))
+        .outerjoin(
+            UserActionTime,
+            and_(
+                UserActionTime.id_action == Action.id_action,
+                func.date(UserActionTime.date) == func.date(date_series.c.date),
+            ),
+        )
+        .group_by(
+            Project.id_project, Project.name, Action.id_action, Action.name, date_series.c.date
+        )
+        .order_by(Project.id_project, Action.id_action, date_series.c.date)
+        .filter(
+            UserAction.id_user == user_id,
             or_(UserActionTime.id_user == user_id, UserActionTime.id_user == None),
             func.date(date_series.c.date) >= func.date(date_start),
-            func.date(date_series.c.date) <= func.date(date_end)) \
-    .all()
+            func.date(date_series.c.date) <= func.date(date_end),
+        )
+        .all()
+    )
 
     if not projects_actions_time_tuple:
         raise NotFoundError("No projects found for the given user and date range")
