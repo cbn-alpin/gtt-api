@@ -26,7 +26,7 @@ def init_db_and_migrations(app, db):
 
     try:
         # Get Alembic configuration
-        alembic_cfg = Config("alembic.ini")
+        alembic_cfg = Config(toml_file="pyproject.toml")
 
         with app.app_context():
             # Create a connection from the engine

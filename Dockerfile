@@ -69,8 +69,6 @@ RUN echo "runtime! defaults.vim" > /etc/vim/vimrc.local \
 # Copy files from "builder" temporary image
 COPY --from=builder /usr/src/app/wheels /wheels
 
-COPY --from=builder /usr/src/app/alembic.ini.sample ./alembic.ini
-
 # Install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*

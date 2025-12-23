@@ -16,7 +16,7 @@ def app():
     # Create tables
     with app.app_context():
         db.create_all()
-        alembic_cfg = Config("alembic.ini")
+        alembic_cfg = Config(toml_file="pyproject.toml")
 
         command.upgrade(alembic_cfg, "head")
 

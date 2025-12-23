@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from alembic.config import Config
 
 # Add the project directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -19,7 +20,7 @@ target_metadata = Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-config = context.config
+config = Config(toml_file="pyproject.toml")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
