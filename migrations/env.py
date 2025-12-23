@@ -2,18 +2,17 @@ import os
 import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
 from alembic.config import Config
+from sqlalchemy import engine_from_config, pool
 
 # Add the project directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+from src.api import db
+
 # Import the Flask app and models
 from src.main import api
-from src.api import db
 from src.models import Base  # Import all your models here
 
 target_metadata = Base.metadata
@@ -31,7 +30,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-#target_metadata = None
+# target_metadata = None
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -94,5 +93,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
-

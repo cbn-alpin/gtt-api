@@ -15,6 +15,7 @@ class NotFoundError(Exception):
         self.status_code = status_code
         super().__init__(self.message)
 
+
 class MissingFieldError(Exception):
     """Exception raised when there is missing field."""
 
@@ -23,6 +24,7 @@ class MissingFieldError(Exception):
         self.status_code = status_code
         super().__init__(self.message)
 
+
 class DeleteError(Exception):
     """Exception raised when there is missing field."""
 
@@ -30,6 +32,7 @@ class DeleteError(Exception):
         self.message = message
         self.status_code = status_code
         super().__init__(self.message)
+
 
 class UpdateError(Exception):
     """Exception raised when there is missing field."""

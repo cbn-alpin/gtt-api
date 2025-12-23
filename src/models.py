@@ -1,13 +1,25 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Numeric, SmallInteger, String, Integer, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    SmallInteger,
+    String,
+    Text,
+)
 from sqlalchemy.ext.declarative import declarative_base
-from src.api import db
 from sqlalchemy.orm import relationship
+
+from src.api import db
 
 Base = db.Model
 
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = "user"
 
     id_user = Column(Integer, primary_key=True)
     email = Column(String(50), unique=True, nullable=False)
@@ -23,8 +35,9 @@ class User(Base):
         self.is_admin = is_admin
         self.password = password
 
+
 class Project(Base):
-    __tablename__ = 'project'
+    __tablename__ = "project"
 
     id_project = Column(Integer, primary_key=True)
     code = Column(String(50), nullable=False)
@@ -34,10 +47,21 @@ class Project(Base):
     end_date = Column(Date, nullable=True)
     is_archived = Column(Boolean, nullable=False)
 
-    actions = relationship('Action', back_populates='project', cascade='all, delete-orphan', passive_deletes=True)
+    actions = relationship(
+        "Action", back_populates="project", cascade="all, delete-orphan", passive_deletes=True
+    )
 
-    def __init__(self, code, name, start_date, id_project='', description=None, end_date=None, is_archived=False):
-        if id_project != '':
+    def __init__(
+        self,
+        code,
+        name,
+        start_date,
+        id_project="",
+        description=None,
+        end_date=None,
+        is_archived=False,
+    ):
+        if id_project != "":
             self.id_project = id_project
         self.code = code
         self.name = name
@@ -46,18 +70,28 @@ class Project(Base):
         self.end_date = end_date
         self.is_archived = is_archived
 
+
 class Action(Base):
-    __tablename__ = 'action'
+    __tablename__ = "action"
 
     id_action = Column(Integer, primary_key=True)
     numero_action = Column(String, nullable=False)
     name = Column(String(50), nullable=False)
     description = Column(Text, nullable=True)
-    id_project = Column(Integer, ForeignKey('project.id_project', ondelete='CASCADE'), nullable=False)
+    id_project = Column(
+        Integer, ForeignKey("project.id_project", ondelete="CASCADE"), nullable=False
+    )
 
-    project = relationship('Project', back_populates='actions')
-    user_actions = relationship('UserAction', back_populates='action', cascade='all, delete-orphan', passive_deletes=True)
-    user_action_times = relationship('UserActionTime', back_populates='action', cascade='all, delete-orphan', passive_deletes=True)
+    project = relationship("Project", back_populates="actions")
+    user_actions = relationship(
+        "UserAction", back_populates="action", cascade="all, delete-orphan", passive_deletes=True
+    )
+    user_action_times = relationship(
+        "UserActionTime",
+        back_populates="action",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def __init__(self, name, numero_action, id_project, description=None):
         self.name = name
@@ -65,39 +99,43 @@ class Action(Base):
         self.description = description
         self.id_project = id_project
 
+
 class UserAction(Base):
-    __tablename__ = 'user_action'
+    __tablename__ = "user_action"
 
-    id_user = Column(Integer, ForeignKey('user.id_user', ondelete='CASCADE'), primary_key=True)
-    id_action = Column(Integer, ForeignKey('action.id_action', ondelete='CASCADE'), primary_key=True)
+    id_user = Column(Integer, ForeignKey("user.id_user", ondelete="CASCADE"), primary_key=True)
+    id_action = Column(
+        Integer, ForeignKey("action.id_action", ondelete="CASCADE"), primary_key=True
+    )
 
-    action = relationship('Action', back_populates='user_actions')
+    action = relationship("Action", back_populates="user_actions")
 
     def __init__(self, id_user, id_action):
         self.id_user = id_user
         self.id_action = id_action
 
+
 class UserActionTime(Base):
-    __tablename__ = 'user_action_time'
+    __tablename__ = "user_action_time"
 
     id_user_action_time = Column(Integer, primary_key=True)
     date = Column(Date, nullable=False)
     duration = Column(Numeric, nullable=False)
-    id_user = Column(Integer, ForeignKey('user.id_user', ondelete='CASCADE'), nullable=False)
-    id_action = Column(Integer, ForeignKey('action.id_action', ondelete='CASCADE'), nullable=False)
+    id_user = Column(Integer, ForeignKey("user.id_user", ondelete="CASCADE"), nullable=False)
+    id_action = Column(Integer, ForeignKey("action.id_action", ondelete="CASCADE"), nullable=False)
 
-    action = relationship('Action', back_populates='user_action_times')
+    action = relationship("Action", back_populates="user_action_times")
 
     def __init__(self, date, duration, id_user, id_action):
         self.date = date
         self.duration = duration
         self.id_user = id_user
         self.id_action = id_action
-    
+
 
 # Travel model
 class Travel(Base):
-    __tablename__ = 'travel'
+    __tablename__ = "travel"
 
     id_travel = Column(Integer, primary_key=True)
     start_date = Column(DateTime, nullable=False)
@@ -117,14 +155,35 @@ class Travel(Base):
     comment_vehicle = Column(Text, nullable=True)
     start_km = Column(SmallInteger, nullable=True)
     end_km = Column(SmallInteger, nullable=True)
-    id_user = Column(Integer, ForeignKey('user.id_user'), nullable=False)
-    id_project = Column(Integer, ForeignKey('project.id_project'), nullable=False)
+    id_user = Column(Integer, ForeignKey("user.id_user"), nullable=False)
+    id_project = Column(Integer, ForeignKey("project.id_project"), nullable=False)
 
-    expenses = relationship('Expense', back_populates='travel', cascade='all, delete-orphan', passive_deletes=True)
+    expenses = relationship(
+        "Expense", back_populates="travel", cascade="all, delete-orphan", passive_deletes=True
+    )
 
-    def __init__(self, start_date, end_date, start_place, return_place, status, purpose, id_user, id_project,
-                 start_municipality, end_municipality, night_municipality, destination, night_count, meal_count, start_km, end_km,
-                 license_vehicle, comment=None, comment_vehicle=None):
+    def __init__(
+        self,
+        start_date,
+        end_date,
+        start_place,
+        return_place,
+        status,
+        purpose,
+        id_user,
+        id_project,
+        start_municipality,
+        end_municipality,
+        night_municipality,
+        destination,
+        night_count,
+        meal_count,
+        start_km,
+        end_km,
+        license_vehicle,
+        comment=None,
+        comment_vehicle=None,
+    ):
         self.start_date = start_date
         self.end_date = end_date
         self.start_place = start_place
@@ -148,18 +207,17 @@ class Travel(Base):
 
 # Expense model
 class Expense(Base):
-    __tablename__ = 'expense'
+    __tablename__ = "expense"
 
     id_expense = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
     comment = Column(Text, nullable=True)
     amount = Column(Numeric, nullable=False)
-    id_travel = Column(Integer, ForeignKey('travel.id_travel', ondelete='CASCADE'), nullable=False)
-    travel = relationship('Travel', back_populates='expenses')
+    id_travel = Column(Integer, ForeignKey("travel.id_travel", ondelete="CASCADE"), nullable=False)
+    travel = relationship("Travel", back_populates="expenses")
+
     def __init__(self, name, amount, id_travel, comment=None):
         self.name = name
         self.amount = amount
         self.id_travel = id_travel
         self.comment = comment
-
-

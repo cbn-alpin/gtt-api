@@ -1,18 +1,20 @@
-from flask import current_app
 import sqlalchemy
+from flask import current_app
+
 from src.api import db
 from src.api.exception import DBInsertException
 from src.api.expense.schema import ExpensePostSchema, ExpenseTravelSchema
 from src.models import Expense
 
-def create_expense(expense: dict, travel_id:int) -> int:
+
+def create_expense(expense: dict, travel_id: int) -> int:
     try:
         expense = ExpensePostSchema().load(expense)
         new_expense = Expense(
-            name=expense['name'],
-            comment=expense.get('comment'),
-            amount=expense.get('amount'),
-            id_travel=travel_id
+            name=expense["name"],
+            comment=expense.get("comment"),
+            amount=expense.get("amount"),
+            id_travel=travel_id,
         )
 
         db.session.add(new_expense)
@@ -32,14 +34,16 @@ def create_expense(expense: dict, travel_id:int) -> int:
         if db.session is not None:
             db.session.close()
         raise DBInsertException()
-    
-def get_expense_by_id(expense_id : int):
+
+
+def get_expense_by_id(expense_id: int):
     action_object = db.session.query(Expense).filter(Expense.id_expense == expense_id).first()
     schema = ExpenseTravelSchema()
-    action= schema.dump(action_object)
+    action = schema.dump(action_object)
     db.session.close()
     return action
-    
+
+
 def update(expense_data, expense_id):
     data = ExpensePostSchema().load(expense_data)
     db.session.query(Expense).filter_by(id_expense=expense_id).update(data)
@@ -47,13 +51,14 @@ def update(expense_data, expense_id):
     db.session.close()
     return get_expense_by_id(expense_id)
 
+
 def delete(expense_id: int):
     try:
         db.session.query(Expense).filter_by(id_expense=expense_id).delete()
         db.session.commit()
 
         db.session.close()
-        return {'message': f'La note du frais \'{expense_id}\' a été supprimé'}
+        return {"message": f"La note du frais '{expense_id}' a été supprimé"}
     except Exception as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")

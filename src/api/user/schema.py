@@ -1,9 +1,8 @@
-
 from marshmallow import Schema, fields
 
 
 class UserSchema(Schema):
-    id_user= fields.Integer(required=True)
+    id_user = fields.Integer(required=True)
     email = fields.String()
     first_name = fields.String()
     last_name = fields.String()
@@ -11,7 +10,7 @@ class UserSchema(Schema):
 
 
 class UserInputSchema(Schema):
-    password= fields.String()
+    password = fields.String()
     email = fields.String()
     first_name = fields.String()
     last_name = fields.String()

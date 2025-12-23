@@ -3,8 +3,8 @@ from marshmallow import Schema, fields
 
 class TravelSchema(Schema):
     id_travel = fields.Integer(required=False)
-    start_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=True)
-    end_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=False)
+    start_date = fields.DateTime(format="%d/%m/%Y %H:%M:%S", required=True)
+    end_date = fields.DateTime(format="%d/%m/%Y %H:%M:%S", required=False)
     start_place = fields.String(required=True)
     return_place = fields.String(required=True)
     status = fields.String(required=False)
@@ -22,9 +22,10 @@ class TravelSchema(Schema):
     end_km = fields.Integer(required=False)
     id_user = fields.Integer(required=False)
 
+
 class TravelPutSchema(Schema):
-    start_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=False)
-    end_date = fields.DateTime(format='%d/%m/%Y %H:%M:%S', required=False)
+    start_date = fields.DateTime(format="%d/%m/%Y %H:%M:%S", required=False)
+    end_date = fields.DateTime(format="%d/%m/%Y %H:%M:%S", required=False)
     start_place = fields.String(required=True)
     return_place = fields.String(required=True)
     status = fields.String(required=False)
@@ -40,5 +41,3 @@ class TravelPutSchema(Schema):
     comment_vehicle = fields.String(required=False)
     start_km = fields.Integer(required=False)
     end_km = fields.Integer(required=False)
-
-

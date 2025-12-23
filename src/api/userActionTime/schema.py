@@ -7,24 +7,25 @@ class TimeSchema(Schema):
 
 
 class ActionTimeSchema(Schema):
-    id_action= fields.Integer(required=True)
+    id_action = fields.Integer(required=True)
     date = fields.Date(required=True)
     duration = fields.Integer(required=True)
 
 
 class ActionWithTimeSchema(Schema):
-    id_action= fields.Integer(required=True)
+    id_action = fields.Integer(required=True)
     name = fields.String(required=True)
     numero_action = fields.String()
     description = fields.String()
     list_time = fields.Nested(TimeSchema)
 
+
 class ProjectTimeSchema(Schema):
-    id_project= fields.Integer(required=False)
+    id_project = fields.Integer(required=False)
     code = fields.String()
     name = fields.String()
     description = fields.String()
     start_date = fields.Date(required=False)
     end_date = fields.Date(required=False)
     is_archived = fields.Boolean()
-    list_action =  fields.Nested(ActionWithTimeSchema)
+    list_action = fields.Nested(ActionWithTimeSchema)

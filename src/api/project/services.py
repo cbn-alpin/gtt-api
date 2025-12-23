@@ -1,15 +1,15 @@
 from datetime import date, datetime
 from enum import Enum
 
+import sqlalchemy
 from flask import abort, current_app, json
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
-import sqlalchemy
-from src.api import db
 
+from src.api import db
 from src.api.action.schema import ActionSchema
 from src.api.exception import DBInsertException, DeleteError, UpdateError
-from src.api.project.schema import ProjectSchema, ProjectUpdateSchema, ProjectInputSchema
+from src.api.project.schema import ProjectInputSchema, ProjectSchema, ProjectUpdateSchema
 from src.models import Action, Project, UserActionTime
 
 
@@ -17,12 +17,12 @@ def create_project(data: dict) -> int:
     try:
         project = ProjectInputSchema().load(data)
         project = Project(
-            code=project['code'],
-            name=project['name'],
-            description=project.get('description'),
-            start_date=project.get('start_date'),
-            end_date=project.get('end_date'),
-            is_archived=project.get('is_archived', False)
+            code=project["code"],
+            name=project["name"],
+            description=project.get("description"),
+            start_date=project.get("start_date"),
+            end_date=project.get("end_date"),
+            is_archived=project.get("is_archived", False),
         )
 
         db.session.add(project)
@@ -63,12 +63,13 @@ def get_project_by_id(project_id: int):
             actions.append(action)
 
     if actions:
-        project['list_action'] = actions
+        project["list_action"] = actions
     else:
-        project['list_action'] = None
+        project["list_action"] = None
 
     db.session.close()
     return project
+
 
 def get_all_projects():
     projects_actions = (
@@ -82,9 +83,11 @@ def get_all_projects():
         project_object, action_object = project_action
         project = ProjectSchema().dump(project_object)
         action = ActionSchema().dump(action_object)
-        existing_project = next((p for p in list_projects if p["id_project"] == project["id_project"]), None)
+        existing_project = next(
+            (p for p in list_projects if p["id_project"] == project["id_project"]), None
+        )
         if existing_project:
-             existing_project["list_action"].append(action)
+            existing_project["list_action"].append(action)
         else:
             project["list_action"] = None if not action else [action]
             list_projects.append(project)
@@ -101,7 +104,7 @@ def get_archived_project():
         schema = ProjectSchema(many=True)
         projects = schema.dump(projects_objects)
         for project in projects:
-                    project['list_action'] = []
+            project["list_action"] = []
         db.session.close()
         return projects
     except ValueError as error:
@@ -112,19 +115,25 @@ def get_archived_project():
             db.session.close()
 
 
-
 def update(project, project_id):
     existing_project = get_project_by_id(project_id)
     if not existing_project:
         raise UpdateError(status_code=404, message="Project not found")
     data = ProjectUpdateSchema().load(project)
     if data.get("is_archived", False):
-        if not existing_project["end_date"] or datetime.strptime(existing_project["end_date"], "%d/%m/%Y").date()  > date.today():
-            raise UpdateError(status_code=400, message="Un projet ne peut être archivé que lorsque sa date de fin est passée.")
+        if (
+            not existing_project["end_date"]
+            or datetime.strptime(existing_project["end_date"], "%d/%m/%Y").date() > date.today()
+        ):
+            raise UpdateError(
+                status_code=400,
+                message="Un projet ne peut être archivé que lorsque sa date de fin est passée.",
+            )
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
     db.session.close()
     return get_project_by_id(project_id)
+
 
 def delete(project_id: int):
     try:
@@ -134,8 +143,12 @@ def delete(project_id: int):
             .filter(Action.id_project == project_id)
             .scalar()
         )
-        if total_duration and total_duration > 0 :
-            raise DeleteError({'message': f'Le projet \'{project_id}\' ne peut pas être supprimé car des saisies du temps y sont associés'})
+        if total_duration and total_duration > 0:
+            raise DeleteError(
+                {
+                    "message": f"Le projet '{project_id}' ne peut pas être supprimé car des saisies du temps y sont associés"
+                }
+            )
 
         db.session.query(Project).filter_by(id_project=project_id).delete()
         db.session.commit()

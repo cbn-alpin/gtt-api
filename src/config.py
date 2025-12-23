@@ -1,8 +1,7 @@
 import dataclasses
-from os import environ
 import tomllib
 import typing
-
+from os import environ
 
 
 @dataclasses.dataclass
@@ -25,9 +24,8 @@ class Config:
     GEFIPROJ_LOGIN: str
     GEFIPROJ_PASSWORD: str
 
-
     def get_engine_uri(self):
-        db_uri = ''
+        db_uri = ""
 
         user = self.DATABASE_USER
         password = self.DATABASE_PASSWORD
@@ -35,7 +33,7 @@ class Config:
         port = self.DATABASE_PORT
         name = self.DATABASE_NAME
 
-        db_uri = f'postgresql://{user}:{password}@{host}:{port}/{name}'
+        db_uri = f"postgresql://{user}:{password}@{host}:{port}/{name}"
         return db_uri
 
 
@@ -51,11 +49,11 @@ class ConfigLoader:
         values = {}
         for field in dataclasses.fields(Config):
             try:
-                if isinstance(field.type(),list):
+                if isinstance(field.type(), list):
                     values[field.name] = self.load_list(
-                        data[field.name],
-                        typing.get_args(field.type)[0])
-                else :
+                        data[field.name], typing.get_args(field.type)[0]
+                    )
+                else:
                     values[field.name] = data[field.name]
             except KeyError:
                 if field.default != dataclasses.MISSING:
@@ -69,11 +67,11 @@ class ConfigLoader:
         values = {}
         for field in dataclasses.fields(Config):
             try:
-                if isinstance(field.type(),list):
+                if isinstance(field.type(), list):
                     values[field.name] = self.load_list(
-                        environ[field.name.upper()],
-                        typing.get_args(field.type)[0])
-                else :
+                        environ[field.name.upper()], typing.get_args(field.type)[0]
+                    )
+                else:
                     values[field.name] = environ[field.name.upper()]
             except KeyError:
                 if field.default != dataclasses.MISSING:
@@ -98,8 +96,10 @@ class ConfigLoader:
         except KeyError as exc:
             raise ConfigEntryMissing(exc.args[0], self._config_file_path)
 
+
 def get_config() -> Config:
-    return ConfigLoader(environ.get("CONFIG_PATH", None)).load()
+    return ConfigLoader(environ.get("CONFIG_PATH", ".env")).load()
+
 
 class ConfigLoaderError(Exception):
     pass
@@ -122,5 +122,3 @@ class ConfigEntryMissing(ConfigLoaderError):
             )
         super().__init__(message)
         self.entry = entry
-
-

@@ -1,13 +1,14 @@
-import jwt
 import os
 from datetime import datetime, timedelta
+
+import jwt
+
 from src.config import get_config
-
-
 
 config = get_config()
 JWT_SECRET = config.JWT_SECRET
-JWT_ALGORITHM = 'HS256'
+JWT_ALGORITHM = "HS256"
+
 
 def generate_jwt(user_info):
     return jwt.encode(
@@ -15,7 +16,7 @@ def generate_jwt(user_info):
             "sub": user_info["sub"],
             "email": user_info["email"],
             "name": user_info.get("name", ""),
-            "exp": datetime.now() + config.JWT_EXPIRES_IN ,
+            "exp": datetime.now() + config.JWT_EXPIRES_IN,
         },
         JWT_SECRET,
         algorithm="HS256",

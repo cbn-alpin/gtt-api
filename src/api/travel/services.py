@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
-from flask import current_app
+
 import sqlalchemy
+from flask import current_app
+
 from src.api import db
+from src.api.exception import DBInsertException
 from src.api.expense.schema import ExpenseSchema
 from src.api.travel.schema import TravelPutSchema, TravelSchema
 from src.models import Expense, Project, Travel
-from src.api.exception import DBInsertException
+
 
 def create_travel(user_id, project_id, travel_data: dict) -> int:
     try:
@@ -13,25 +16,25 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
         travel = schema.load(travel_data)
 
         new_travel = Travel(
-            status=travel['status'],
-            start_date=travel.get('start_date'),
-            end_date=travel.get('end_date'),
-            start_place=travel.get('start_place'),
-            return_place=travel.get('return_place'),
-            purpose=travel.get('purpose'),
-            start_municipality=travel.get('start_municipality'),
-            end_municipality=travel.get('end_municipality'),
-            night_municipality=travel.get('night_municipality'),
-            destination=travel.get('destination'),
-            night_count=travel.get('night_count'),
-            meal_count=travel.get('meal_count'),
-            comment=travel.get('comment'),
-            license_vehicle=travel.get('license_vehicle'),
-            comment_vehicle=travel.get('comment_vehicle'),
-            start_km=travel.get('start_km'),
-            end_km=travel.get('end_km'),
+            status=travel["status"],
+            start_date=travel.get("start_date"),
+            end_date=travel.get("end_date"),
+            start_place=travel.get("start_place"),
+            return_place=travel.get("return_place"),
+            purpose=travel.get("purpose"),
+            start_municipality=travel.get("start_municipality"),
+            end_municipality=travel.get("end_municipality"),
+            night_municipality=travel.get("night_municipality"),
+            destination=travel.get("destination"),
+            night_count=travel.get("night_count"),
+            meal_count=travel.get("meal_count"),
+            comment=travel.get("comment"),
+            license_vehicle=travel.get("license_vehicle"),
+            comment_vehicle=travel.get("comment_vehicle"),
+            start_km=travel.get("start_km"),
+            end_km=travel.get("end_km"),
             id_user=user_id,
-            id_project=project_id
+            id_project=project_id,
         )
 
         db.session.add(new_travel)
@@ -60,9 +63,9 @@ def get_travels(user_id, date_start: str = None, date_end: str = None):
     query = query.filter(Travel.id_user == user_id)
 
     if date_start:
-        query = query.filter(Travel.start_date >= datetime.strptime(date_start, '%d/%m/%Y'))
+        query = query.filter(Travel.start_date >= datetime.strptime(date_start, "%d/%m/%Y"))
     if date_end:
-        end_date = datetime.strptime(date_end, '%d/%m/%Y')
+        end_date = datetime.strptime(date_end, "%d/%m/%Y")
         end_date = end_date + timedelta(days=1)
         query = query.filter(Travel.end_date <= end_date)
 
@@ -76,7 +79,9 @@ def get_travels(user_id, date_start: str = None, date_end: str = None):
         travel_data["id_project"] = id_project
         travel_data["project_code"] = project_code
 
-        existing_travel = next((t for t in list_travels if t["id_travel"] == travel_data["id_travel"]), None)
+        existing_travel = next(
+            (t for t in list_travels if t["id_travel"] == travel_data["id_travel"]), None
+        )
 
         if existing_travel:
             if expense_data:
