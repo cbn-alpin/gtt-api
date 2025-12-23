@@ -1,54 +1,96 @@
 # gtt-api
-Backend de l'outil de Gestion du Temps de Travail (GTT).
 
-## Installation et utilisation
+Backend for the *Gestion du Temps de Travail* (GTT) Tool.
 
-⚠️ Attention, le projet fonctionne uniquement sous Python v3.x
+## Installation and Usage
 
-Pour installer ce projet :
+⚠️ Warning: This project only works with Python v3.x.
 
-Cloner le projet dans votre "workspace" local :
+To install this project:
 
+Clone the project into your local workspace:
+
+```bash
     git clone https://github.com/cbn-alpin/gtt-api.git
+```
 
-Se deplacer dans le dossier du projet cloné :
+Navigate to the cloned project folder:
 
-    cd gtt-api/
+```bash
+cd gtt-api/
+```
 
-Créer un environnement virtuel :
+Create a virtual environment:
 
-    python3 -m venv venv
+```bash
+python3 -m venv .venv
+```
 
-Activer l'environnement virtuel :
+Activate the virtual environment:
 
-    source ./venv/bin/activate
+```bash
+source ./.venv/bin/activate
+```
+## Dependencies
 
-Installer les dépendances :
+Install Python dependencies defined in *pyproject.toml*:
 
-    pip install -r requirements.txt
+```bash
+# In development
+pip install -e .
+# In production
+pip install .
+```
 
+**Note**: we don't use *requirements.txt* file in this project.
 
-Crée les fichiers de configuration:
+## Configuration file
 
-    cp .env.sample .env
-    cp alembic.ini.sample alembic.ini
+Create a *.env* configuration file and **adapt it to your configuration**:
 
-Remplir les fichier de configuration
+```bash
+cp .env.sample .env
+```
 
-Mise à jour de la base de donnée:
+If you change the location of the *.env* file, you must specify the path to the new location using the `CONFIG_PATH` environment variable.
 
-    alembic upgrade head
+## Database
 
-Lancement du framwork Flask :
+The database is installed by default when Flask is launch if it doesn't exist. The same applies to the migrations.
+If a manual update is required, use the following command:
 
-    FLASK_APP=src/main.py CONFIG_PATH=.env flask run
+```bash
+alembic upgrade head
+# If you had change the .env location used:
+# CONFIG_PATH=/new/location/.env alembic upgrade head
+```
+**Note**: we used *pyproject.toml* instead of *alembic.ini*. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no *alembic.ini* file.
 
+Alembic was originaly initialize with this command :
 
-## Run the test:
+```bash
+alembic init --template pyproject migrations
+```
 
-    PYTHONPATH=$PYTHONPATH:. FLASK_ENV=test pytest tests/test.py
+## Running Flask
 
+Launch the Flask framework in development mode:
 
-## Generate revision with alembic:
+```bash
+FLASK_APP=src/main.py flask run
+# If you had change the .env location used:
+# CONFIG_PATH=/new/location/.env FLASK_APP=src/main.py flask run
+```
+**Note**: For production, we will use Gunicorn and Nginx within a Docker container.
 
-    alembic revision --autogenerate -m ""
+## Running Tests
+
+```bash
+PYTHONPATH=$PYTHONPATH:. FLASK_ENV=test pytest tests/test.py
+```
+
+## Generate a Database Revision with Alembic
+
+```bash
+alembic revision --autogenerate -m "My revision message"
+```
