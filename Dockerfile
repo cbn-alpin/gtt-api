@@ -28,8 +28,7 @@ COPY . /usr/src/app/
 # RUN flake8 --ignore=E501,F401 .
 
 # Install python dependencies
-COPY ./requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels .
 
 
 #+----------------------------------------------------------------------+
@@ -69,7 +68,6 @@ RUN echo "runtime! defaults.vim" > /etc/vim/vimrc.local \
 
 # Copy files from "builder" temporary image
 COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
 
 COPY --from=builder /usr/src/app/alembic.ini.sample ./alembic.ini
 

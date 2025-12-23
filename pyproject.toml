@@ -1,0 +1,65 @@
+[project]
+name = "gtt-api"
+dynamic = ["version"]
+description = "API backend for GTT application"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "LICENSE" }
+authors = [{ name = "CBN Alpin" }]
+keywords = ["gtt", "api", "flask"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "alembic==1.17.2",
+    "Flask==3.1.2",
+    "Flask-Cors==6.0.2",
+    "Flask-JWT-Extended==4.7.1",
+    "Flask-SQLAlchemy==3.1.1",
+    "SQLAlchemy==2.0.45",
+    "Flask-Migrate==4.1.0",
+    "psycopg[binary]>=3.0,<4",
+    "python-dotenv>=1.2.0,<2",
+    "requests==2.32.5",
+    "marshmallow==3.26.2",
+    "google-auth==2.45.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2", "black==25.12.0", "isort==7.0.0"]
+
+[build-system]
+requires = ["setuptools>=80", "setuptools-scm[simple]>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Repository = "https://github.com/cbn-alpin/gtt-api"
+Issues = "https://github.com/cbn-alpin/gtt-api/issues"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311', 'py312']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+
+[tool.pylint]
+max-line-length = 100
