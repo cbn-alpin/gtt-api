@@ -63,6 +63,12 @@ skip_gitignore = true
 
 [tool.pylint]
 max-line-length = 100
+disable = [
+    "missing-module-docstring",
+    "missing-function-docstring",
+    "missing-class-docstring",
+]
+load-plugins = []
 
 [tool.alembic]
 sqlalchemy.url = "postgresql://user:password@localhost/dbname"

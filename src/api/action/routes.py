@@ -23,7 +23,7 @@ def post_action():
 @resources.route("/api/actions/<int:action_id>", methods=["PUT"])
 @admin_required
 def update_action(action_id: int):
-    current_app.logger.info(f"In PUT /api/actions/<int:action_id>")
+    current_app.logger.info("In PUT /api/actions/<int:action_id>")
     posted_data = request.get_json()
     response = update(posted_data, action_id)
     response = jsonify(response), 200
