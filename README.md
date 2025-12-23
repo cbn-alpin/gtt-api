@@ -38,6 +38,7 @@ Install Python dependencies defined in *pyproject.toml*:
 ```bash
 # In development
 pip install -e .
+pip install -e .[dev]
 # In production
 pip install .
 ```
