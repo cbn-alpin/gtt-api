@@ -57,7 +57,37 @@ If you change the location of the *.env* file, you must specify the path to the 
 
 ## Database
 
-The database is installed by default when Flask is launch if it doesn't exist. The same applies to the migrations.
+We use Postgresql and you need to add a new user and crate a new database.
+Connect to Psql terminal with a superadmin user:
+
+```bash
+sudo -u postgres psql
+```
+
+In Psql terminal, create a new user (`<user-name>`) with password (`<user-password>`) and a new database (`<new-database-name>`):
+```sql
+CREATE USER <user-name> WITH ENCRYPTED PASSWORD '<user-password>';
+CREATE DATABASE <new-database-name> WITH TEMPLATE template0 OWNER <user-name>;
+GRANT ALL PRIVILEGES ON DATABASE <new-database-name> TO <user-name> ;
+```
+
+The database content is installed by default when Flask is launch if it doesn't exist. The same applies to the migrations.
+Run Flask development server with :
+
+```bash
+# If necessary, source the venv:
+source ./.venv/bin/activate
+# Run the Flask development server:
+FLASK_APP=src/main.py flask run
+```
+
+You will see:
+
+```
+INFO in __init__: No previous migrations found. Running all migrations...
+INFO in __init__: Database is up to date
+```
+
 If a manual update is required, use the following command:
 
 ```bash
@@ -65,6 +95,7 @@ alembic upgrade head
 # If you had change the .env location used:
 # CONFIG_PATH=/new/location/.env alembic upgrade head
 ```
+
 **Note**: we used *pyproject.toml* instead of *alembic.ini*. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no *alembic.ini* file.
 
 Alembic was originaly initialize with this command :
@@ -73,11 +104,46 @@ Alembic was originaly initialize with this command :
 alembic init --template pyproject migrations
 ```
 
+With the database created, you must add at least one admin user:
+
+```sql
+-- Switch to the new database:
+\c <new-database-name>
+
+INSERT INTO "user" (last_name, first_name, email, is_admin, "password")
+SELECT
+  '<LASTNAME>',
+  '<Firstname>',
+  '<me@example.com>',
+  TRUE,
+  md5('<password>') ;
+```
+
+Then, you can link the users with the default global project (`id=0`) with :
+```sql
+INSERT INTO user_action (id_user, id_action)
+  SELECT
+    u.id_user,
+    a.id_action
+  FROM public."user" AS u
+    CROSS JOIN public."action" AS a
+  WHERE a.id_project = 0
+    AND NOT EXISTS (
+      SELECT 1
+      FROM public."user_action" ua
+      WHERE ua.id_user = u.id_user
+        AND ua.id_action = a.id_action
+    );
+```
+
 ## Running Flask
 
 Launch the Flask framework in development mode:
 
 ```bash
+# If necessary, source the venv:
+source ./.venv/bin/activate
+# Run the Flask development server:
 FLASK_APP=src/main.py flask run
 # If you had change the .env location used:
 # CONFIG_PATH=/new/location/.env FLASK_APP=src/main.py flask run
@@ -87,11 +153,19 @@ FLASK_APP=src/main.py flask run
 ## Running Tests
 
 ```bash
-PYTHONPATH=$PYTHONPATH:. FLASK_ENV=test pytest tests/test.py
+# If necessary, source the venv:
+source ./.venv/bin/activate
+# Run the tests:
+FLASK_ENV=test pytest tests/test.py
 ```
 
 ## Generate a Database Revision with Alembic
 
+To generate a new Alembic revision with the message `<my-revision-message>` :
+
 ```bash
-alembic revision --autogenerate -m "My revision message"
+# If necessary, source the venv:
+source ./.venv/bin/activate
+# Create new Alembic revision:
+alembic revision --autogenerate -m "<my-revision-message>"
 ```
