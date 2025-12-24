@@ -26,15 +26,15 @@ dependencies = [
     "Flask-SQLAlchemy==3.1.1",
     "SQLAlchemy==2.0.45",
     "Flask-Migrate==4.1.0",
-    "psycopg[binary]>=3.0,<4",
-    "python-dotenv>=1.2.0,<2",
+    "psycopg2~=2.0",
+    "python-dotenv~=1.2",
     "requests==2.32.5",
     "marshmallow==3.26.2",
     "google-auth==2.45.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest==8.4.2", "black==25.12.0", "isort==7.0.0"]
+dev = ["pytest~=8.4", "black~=25.12", "isort~=7.0", "pylint~=4.0"]
 
 [build-system]
 requires = ["setuptools>=80", "setuptools-scm[simple]>=8", "wheel"]
