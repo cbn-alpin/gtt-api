@@ -23,6 +23,10 @@ class Config:
     GEFIPROJ_URL: str
     GEFIPROJ_LOGIN: str
     GEFIPROJ_PASSWORD: str
+    SQLALCHEMY_ENGINE_OPTIONS: dict = dataclasses.field(default_factory=lambda: {})
+    SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
+    JWT_BLACKLIST_ENABLED: bool = True
+    JWT_BLACKLIST_TOKEN_CHECKS: list = dataclasses.field(default_factory=lambda: ["access"])
 
     def get_engine_uri(self):
         db_uri = ""
@@ -33,7 +37,7 @@ class Config:
         port = self.DATABASE_PORT
         name = self.DATABASE_NAME
 
-        db_uri = f"postgresql://{user}:{password}@{host}:{port}/{name}"
+        db_uri = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{name}"
         return db_uri
 
 
@@ -48,36 +52,33 @@ class ConfigLoader:
 
         values = {}
         for field in dataclasses.fields(Config):
-            try:
-                if isinstance(field.type(), list):
-                    values[field.name] = self.load_list(
-                        data[field.name], typing.get_args(field.type)[0]
-                    )
+            # Si le champ a une valeur par défaut, ne le chargez que s'il est présent.
+            # Sinon, le champ est obligatoire.
+            has_default = (
+                field.default != dataclasses.MISSING
+                or field.default_factory != dataclasses.MISSING
+            )
+            if field.name in data:
+                if isinstance(field.type, type) and issubclass(field.type, list):
+                    values[field.name] = self.load_list(data[field.name], typing.get_args(field.type)[0])
                 else:
                     values[field.name] = data[field.name]
-            except KeyError:
-                if field.default != dataclasses.MISSING:
-                    values[field.name] = field.default
-                else:
-                    raise
+            elif not has_default:
+                raise KeyError(field.name)
 
         return Config(**values)
 
     def _load_from_env(self) -> Config:
         values = {}
         for field in dataclasses.fields(Config):
-            try:
-                if isinstance(field.type(), list):
-                    values[field.name] = self.load_list(
-                        environ[field.name.upper()], typing.get_args(field.type)[0]
-                    )
-                else:
-                    values[field.name] = environ[field.name.upper()]
-            except KeyError:
-                if field.default != dataclasses.MISSING:
-                    values[field.name] = field.default
-                else:
-                    raise
+            has_default = (
+                field.default != dataclasses.MISSING
+                or field.default_factory != dataclasses.MISSING
+            )
+            if field.name.upper() in environ:
+                values[field.name] = environ[field.name.upper()]
+            elif not has_default:
+                raise KeyError(field.name)
 
         return Config(**values)
 
