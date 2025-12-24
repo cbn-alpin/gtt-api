@@ -93,8 +93,8 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
             and_(
                 UserActionTime.id_action == Action.id_action,
                 or_(UserActionTime.id_user == user_id, UserActionTime.id_user == None),
-                func.date(UserActionTime.date) >= f"{start_year}-01-01",
-                func.date(UserActionTime.date) <= f"{start_year}-12-31",
+                func.date(UserActionTime.date) >= func.date(date_start),
+                func.date(UserActionTime.date) <= func.date(date_end),
             ),
         )
         .filter(UserAction.id_user == user_id)
