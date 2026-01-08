@@ -1,8 +1,11 @@
 {
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "always"
+  "pylint.enabled": false,
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
   },
-  "editor.defaultFormatter": "charliermarsh.ruff",
-  "pylint.enabled": false
+  "ruff.configurationPreference": "filesystemFirst"
 }
