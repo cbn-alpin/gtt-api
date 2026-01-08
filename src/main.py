@@ -1,10 +1,8 @@
-# Python libraries
-
 import marshmallow
-from flask import jsonify, request
+from flask import Flask, jsonify
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
-from src.api import create_api
 from src.api.action.routes import resources as actions_ressources
 from src.api.auth.routes import resources as auth_ressources
 from src.api.exception import DBInsertException, NotFoundError
@@ -14,7 +12,38 @@ from src.api.travel.routes import resources as travels_ressources
 from src.api.user.routes import resources as users_ressources
 from src.api.userAction.routes import resources as users_action_ressources
 from src.api.userActionTime.routes import resources as users_action_time_ressources
+from src.config import get_config
 from src.database import db, init_db_and_migrations
+
+__version__ = "0.1.0"
+
+
+jwt = JWTManager()
+
+
+def create_api(config_overrides: dict = None):
+    """
+    Create API with Flask.
+    """
+    app = Flask(__name__, template_folder="templates")
+
+    if config_overrides:
+        app.config.from_mapping(config_overrides)
+    else:
+        config = get_config()
+        app.config["SQLALCHEMY_DATABASE_URI"] = config.get_engine_uri()
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = config.SQLALCHEMY_ENGINE_OPTIONS
+        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = config.SQLALCHEMY_TRACK_MODIFICATIONS
+        app.config["JWT_SECRET_KEY"] = config.JWT_SECRET
+        app.config["JWT_ACCESS_TOKEN_EXPIRES"] = config.JWT_EXPIRES_IN
+        app.config["JWT_BLACKLIST_ENABLED"] = config.JWT_BLACKLIST_ENABLED
+        app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = config.JWT_BLACKLIST_TOKEN_CHECKS
+
+    jwt.init_app(app)
+    db.init_app(app)
+
+    return app
+
 
 # Creating the Flask application
 api = create_api()
