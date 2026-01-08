@@ -14,7 +14,7 @@ from src.models import User
 resources = Blueprint("users", __name__)
 
 
-@resources.route("/api/user/<int:user_id>/project", methods=["GET"])
+@resources.route("/user/<int:user_id>/project", methods=["GET"])
 @user_required
 def get_user_projects(user_id: int):
     current_app.logger.info("In GET /api/user/<int:user_id>/project")
@@ -30,7 +30,7 @@ def get_user_projects(user_id: int):
 
 
 # Create a new user
-@resources.route("/api/users", methods=["POST"])
+@resources.route("/users", methods=["POST"])
 @admin_required
 def post_user():
     data = request.get_json()
@@ -44,7 +44,7 @@ def post_user():
 
 
 # Get all users
-@resources.route("/api/users", methods=["GET"])
+@resources.route("/users", methods=["GET"])
 @admin_required
 def get_all_users():
     current_app.logger.info("In GET /api/users")
@@ -63,7 +63,7 @@ def get_all_users():
 
 
 # Get a user by ID
-@resources.route("/api/users/<int:user_id>", methods=["GET"])
+@resources.route("/users/<int:user_id>", methods=["GET"])
 @user_required
 def get_user_by_id_route(user_id: int):
     current_app.logger.info("In GET /api/users/<int:user_id>")
@@ -81,7 +81,7 @@ def get_user_by_id_route(user_id: int):
 
 
 # Update a user by ID
-@resources.route("/api/users/<int:user_id>", methods=["PUT"])
+@resources.route("/users/<int:user_id>", methods=["PUT"])
 @user_required
 def update_user_route(user_id: int):
     current_app.logger.info(f"In PUT /api/users/<int:user_id>")
@@ -92,7 +92,7 @@ def update_user_route(user_id: int):
 
 
 # Delete a user by ID
-@resources.route("/api/users/<int:user_id>", methods=["DELETE"])
+@resources.route("/users/<int:user_id>", methods=["DELETE"])
 @admin_required
 def delete_user_route(user_id: int):
     current_app.logger.info("In DELETE /api/users/<int:user_id>")

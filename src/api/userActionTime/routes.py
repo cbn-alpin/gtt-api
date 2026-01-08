@@ -13,7 +13,7 @@ from src.models import User
 resources = Blueprint("users_action_time", __name__)
 
 
-@resources.route("/api/user/<int:user_id>/projects/times", methods=["GET"])
+@resources.route("/user/<int:user_id>/projects/times", methods=["GET"])
 @user_required
 def get_user_projects(user_id: int):
     current_app.logger.info("In GET /api/user/<int:user_id>/project")
@@ -40,7 +40,7 @@ def get_user_projects(user_id: int):
         raise e
 
 
-@resources.route("/api/user/<int:user_id>/projects/times", methods=["POST"])
+@resources.route("/user/<int:user_id>/projects/times", methods=["POST"])
 @user_required
 def post_put_user_time(user_id: int):
     data = request.get_json()
@@ -54,7 +54,7 @@ def post_put_user_time(user_id: int):
     return jsonify({"message": "time saved", "action": action_id}), 201
 
 
-@resources.route("/api/project/<int:project_id>/actions", methods=["GET"])
+@resources.route("/project/<int:project_id>/actions", methods=["GET"])
 def get_project_actions_time_entries(project_id):
     try:
         response = get_user_project_actions_time_entries(project_id)

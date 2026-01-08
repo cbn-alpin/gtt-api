@@ -9,7 +9,7 @@ resources = Blueprint("travels", __name__)
 
 
 # Create a new travel
-@resources.route("/api/user/<int:user_id>/project/<int:project_id>/travels/", methods=["POST"])
+@resources.route("/user/<int:user_id>/project/<int:project_id>/travels/", methods=["POST"])
 @user_required
 def post_travel(user_id: int, project_id: int):
     data = request.get_json()
@@ -28,7 +28,7 @@ def post_travel(user_id: int, project_id: int):
 
 
 # Get all travels of a user
-@resources.route("/api/travels/user/<int:user_id>", methods=["GET"])
+@resources.route("/travels/user/<int:user_id>", methods=["GET"])
 @user_required
 def get_travels_by_user(user_id: int):
     current_app.logger.info("In GET /api/travels/user/<int:user_id>")
@@ -60,7 +60,7 @@ def get_travels_by_user(user_id: int):
         return response
 
 
-@resources.route("/api/travels/<int:travel_id>/user/<int:user_id>", methods=["PUT"])
+@resources.route("/travels/<int:travel_id>/user/<int:user_id>", methods=["PUT"])
 @user_required
 def update_travel(travel_id: int, user_id: int):
     existing_travel = get_travel_by_id(travel_id)
@@ -76,7 +76,7 @@ def update_travel(travel_id: int, user_id: int):
     return response
 
 
-@resources.route("/api/travels/<int:travel_id>/user/<int:user_id>", methods=["DELETE"])
+@resources.route("/travels/<int:travel_id>/user/<int:user_id>", methods=["DELETE"])
 # @user_required
 def delete_project(travel_id: int, user_id: int):
     current_app.logger.info("In DELETE /api/travels/<int:travel_id>/user/<int:user_id>")

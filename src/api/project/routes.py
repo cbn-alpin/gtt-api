@@ -15,7 +15,7 @@ from src.models import Project
 resources = Blueprint("projects", __name__)
 
 
-@resources.route("/api/projects", methods=["POST"])
+@resources.route("/projects", methods=["POST"])
 @admin_required
 def post_project():
     data = request.get_json()
@@ -38,7 +38,7 @@ def post_project():
 
 
 # Get all projects
-@resources.route("/api/projects", methods=["GET"])
+@resources.route("/projects", methods=["GET"])
 @jwt_required()
 def get_projects():
     current_app.logger.info("In GET /api/projects")
@@ -58,7 +58,7 @@ def get_projects():
 
 
 # Get archived projects
-@resources.route("/api/projects/archived", methods=["GET"])
+@resources.route("/projects/archived", methods=["GET"])
 @jwt_required()
 def get_archived_projects():
     current_app.logger.info("In GET /api/projects/archived")
@@ -81,7 +81,7 @@ def get_archived_projects():
         return response
 
 
-@resources.route("/api/projects/<int:project_id>", methods=["GET"])
+@resources.route("/projects/<int:project_id>", methods=["GET"])
 @jwt_required()
 def get_project_by_id(project_id: int):
     current_app.logger.info("In GET /api/projects/<int:project_id>")
@@ -103,7 +103,7 @@ def get_project_by_id(project_id: int):
         )
 
 
-@resources.route("/api/projects/<int:project_id>", methods=["PUT"])
+@resources.route("/projects/<int:project_id>", methods=["PUT"])
 @admin_required
 def update_project(project_id: int):
     current_app.logger.info(f"In PUT /api/projects/<int:project_id>")
@@ -125,7 +125,7 @@ def update_project(project_id: int):
     return jsonify(response), 200
 
 
-@resources.route("/api/projects/<int:project_id>", methods=["DELETE"])
+@resources.route("/projects/<int:project_id>", methods=["DELETE"])
 @admin_required
 def delete_project(project_id: int):
     current_app.logger.info("In DELETE /api/projects/<int:project_id>")
@@ -146,7 +146,7 @@ def delete_project(project_id: int):
         return jsonify({"message": "Une erreur est survenue lors de la suppression du projet"}), 500
 
 
-@resources.route("/api/projects/gefiproj", methods=["GET"])
+@resources.route("/projects/gefiproj", methods=["GET"])
 @admin_required
 def get_gefiproj_project():
     config = get_config()

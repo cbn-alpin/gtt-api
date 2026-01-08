@@ -42,6 +42,14 @@ def create_api(config_overrides: dict = None):
     jwt.init_app(app)
     db.init_app(app)
 
+    app.register_blueprint(projects_ressources, url_prefix="/api")
+    app.register_blueprint(users_ressources, url_prefix="/api")
+    app.register_blueprint(users_action_time_ressources, url_prefix="/api")
+    app.register_blueprint(users_action_ressources, url_prefix="/api")
+    app.register_blueprint(actions_ressources, url_prefix="/api")
+    app.register_blueprint(auth_ressources, url_prefix="/api")
+    app.register_blueprint(travels_ressources, url_prefix="/api")
+    app.register_blueprint(expenses_ressources, url_prefix="/api")
     return app
 
 
@@ -114,13 +122,3 @@ def handle_schema_error(error):
         ),
         400,
     )
-
-
-api.register_blueprint(projects_ressources)
-api.register_blueprint(users_ressources)
-api.register_blueprint(users_action_time_ressources)
-api.register_blueprint(users_action_ressources)
-api.register_blueprint(actions_ressources)
-api.register_blueprint(auth_ressources)
-api.register_blueprint(travels_ressources)
-api.register_blueprint(expenses_ressources)
