@@ -5,7 +5,7 @@ from flask import jsonify, request
 from flask_cors import CORS
 from flask_migrate import Migrate
 
-from src.api import create_api, db, init_db_and_migrations
+from src.api import create_api
 from src.api.action.routes import resources as actions_ressources
 from src.api.auth.routes import resources as auth_ressources
 from src.api.exception import DBInsertException, NotFoundError
@@ -15,6 +15,7 @@ from src.api.travel.routes import resources as travels_ressources
 from src.api.user.routes import resources as users_ressources
 from src.api.userAction.routes import resources as users_action_ressources
 from src.api.userActionTime.routes import resources as users_action_time_ressources
+from src.database import db, init_db_and_migrations
 
 # Creating the Flask application
 api = create_api()

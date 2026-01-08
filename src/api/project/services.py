@@ -6,10 +6,10 @@ from flask import abort, current_app, json
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
 
-from src.api import db
 from src.api.action.schema import ActionSchema
 from src.api.exception import DBInsertException, DeleteError, UpdateError
 from src.api.project.schema import ProjectInputSchema, ProjectSchema, ProjectUpdateSchema
+from src.database import db
 from src.models import Action, Project, UserActionTime
 
 

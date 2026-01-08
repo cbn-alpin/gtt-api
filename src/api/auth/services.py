@@ -8,10 +8,11 @@ from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
 from src import api
-from src.api import db, user
+from src.api import user
 from src.api.auth.schema import AuthInputSchema
 from src.api.exception import MissingFieldError, NotFoundError
 from src.config import get_config
+from src.database import db
 from src.models import User
 
 print(hashlib.md5("whatever your string is".encode("utf-8")).hexdigest())

@@ -1,9 +1,9 @@
 import sqlalchemy
 from flask import current_app
 
-from src.api import db
 from src.api.exception import DBInsertException
 from src.api.expense.schema import ExpensePostSchema, ExpenseTravelSchema
+from src.database import db
 from src.models import Expense
 
 

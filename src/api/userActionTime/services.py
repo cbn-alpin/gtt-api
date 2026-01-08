@@ -1,15 +1,11 @@
 from datetime import datetime
-from enum import Enum
 
-import sqlalchemy
-from flask import abort, current_app, json
-from flask_sqlalchemy import SQLAlchemy
-from marshmallow import EXCLUDE
+from flask import abort
 from sqlalchemy import and_, func, literal_column, or_
 
-from src.api import db
-from src.api.exception import DBInsertException, NotFoundError
-from src.api.userActionTime.schema import ActionTimeSchema, ActionWithTimeSchema, ProjectTimeSchema
+from src.api.exception import NotFoundError
+from src.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchema
+from src.database import db
 from src.models import Action, Project, User, UserAction, UserActionTime
 
 

@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 import sqlalchemy
 from flask import current_app
 
-from src.api import db
 from src.api.exception import DBInsertException
 from src.api.expense.schema import ExpenseSchema
 from src.api.travel.schema import TravelPutSchema, TravelSchema
+from src.database import db
 from src.models import Expense, Project, Travel
 
 

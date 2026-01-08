@@ -1,8 +1,10 @@
 from flask import current_app
 from sqlalchemy.exc import IntegrityError
-from src.api import db
-from src.models import UserAction
+
 from src.api.exception import DBInsertException
+from src.database import db
+from src.models import UserAction
+
 
 def create_user_action(user_id: int, action_id: int) -> dict:
     """Create a new user action."""

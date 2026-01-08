@@ -9,7 +9,7 @@ from sqlalchemy import engine_from_config, pool
 # Add the project directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from src.api import db
+from src.database import db
 
 # Import the Flask app and models
 from src.main import api
