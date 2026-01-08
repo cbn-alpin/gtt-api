@@ -3,7 +3,6 @@
 import marshmallow
 from flask import jsonify, request
 from flask_cors import CORS
-from flask_migrate import Migrate
 
 from src.api import create_api
 from src.api.action.routes import resources as actions_ressources
