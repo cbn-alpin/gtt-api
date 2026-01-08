@@ -6,9 +6,14 @@ from flask_jwt_extended import jwt_required
 
 from src.api.auth.services import admin_required
 from src.api.exception import DeleteError, UpdateError
-from src.api.project.services import create_project, delete, get_all_projects, get_archived_project
+from src.api.project.services import (
+    create_project,
+    delete,
+    get_all_projects,
+    get_archived_project,
+    update,
+)
 from src.api.project.services import get_project_by_id as project_by_id
-from src.api.project.services import update
 from src.config import get_config
 from src.models import Project
 
@@ -21,8 +26,8 @@ def post_project():
     data = request.get_json()
 
     current_app.logger.debug("In POST /api/project")
-    if not data.get("code") or not data.get("name"):
-        abort(400, description="Code and Name are required fields")
+    if not data.get("code") or not data.get("name") or not data.get("start_date"):
+        abort(400, description="Code, name and start_date are required fields")
 
     if data.get("start_date") and data.get("end_date"):
         try:

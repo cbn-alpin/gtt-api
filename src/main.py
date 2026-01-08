@@ -100,10 +100,15 @@ def handle_db_insert_error(error):
 
 
 @api.errorhandler(NotFoundError)
-def handle_db_insert_error(error):
+def handle_db_not_found_error(error):
     return (
         jsonify(
-            {"status": "error", "type": "NOT_FOUND", "code": "NOT_FOUND", "message": error.message}
+            {
+                "status": "error",
+                "type": "NOT_FOUND",
+                "code": "NOT_FOUND",
+                "message": error.message,
+            }
         ),
         error.status_code,
     )

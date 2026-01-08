@@ -3,9 +3,8 @@ from datetime import datetime
 from flask import Blueprint, abort, current_app, jsonify, request
 
 from src.api.auth.services import user_required
-from src.api.project.services import create_project, delete, get_all_projects
+from src.api.project.services import create_project, delete, get_all_projects, update
 from src.api.project.services import get_project_by_id as project_by_id
-from src.api.project.services import update
 from src.api.userAction.services import create_user_action, delete_user_action_service
 from src.models import Project
 
@@ -31,9 +30,9 @@ def post_user_action(user_id: int, action_id: int):
 @user_required
 def delete_user_action(user_id: int, action_id: int):
     current_app.logger.info("In DELETE /api/user/<int:user_id>/action/<int:action_id>")
-    if type(user_id) != int:
+    if type(user_id) is not int:
         abort(400, description="User id must be an int")
-    if type(action_id) != int:
+    if type(action_id) is not int:
         abort(400, description="Action id must be an int")
     try:
         response = delete_user_action_service(user_id, action_id)
