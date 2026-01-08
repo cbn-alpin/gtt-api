@@ -1,7 +1,8 @@
 import dataclasses
-import tomllib
 import typing
 from os import environ
+
+import tomllib
 
 
 @dataclasses.dataclass
@@ -13,7 +14,6 @@ class Config:
     DATABASE_USER: str
     FLASK_APP: str
     FLASK_DEBUG: bool
-    FLASK_ENV: str
     GS_AUTH_URI: str
     GS_CLIENT_ID: str
     GS_PRIVATE_KEY: str
