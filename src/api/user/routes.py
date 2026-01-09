@@ -69,8 +69,10 @@ def get_user_by_id_route(user_id: int):
     current_app.logger.info("In GET /api/users/<int:user_id>")
     response = None
     try:
-        response = get_user_by_id(user_id)
-        response = jsonify(response), 200
+        user = get_user_by_id(user_id)
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+        response = jsonify(user), 200
         return response
     except ValueError as error:
         current_app.logger.error(error)
