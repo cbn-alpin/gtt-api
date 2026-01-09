@@ -7,7 +7,6 @@ from src.api.travel.services import get_travel_by_id
 resources = Blueprint("expenses", __name__)
 
 
-# Create a new expense
 @resources.route("/expenses/user/<int:user_id>/travel/<int:travel_id>", methods=["POST"])
 @user_required
 def post_expense(travel_id: int, user_id: int):
@@ -42,7 +41,7 @@ def update_expense(expense_id: int, user_id: int):
     if existing_travel.get("id_user") != user_id:
         abort(403, description="Unauthorized to update this expense")
 
-    current_app.logger.info(f"In PUT /api/expenses/<int:expense_id>/user/<int:user_id>")
+    current_app.logger.info("In PUT /api/expenses/<int:expense_id>/user/<int:user_id>")
     posted_data = request.get_json()
     response = update(posted_data, expense_id)
     response = jsonify(response), 200
@@ -63,17 +62,20 @@ def delete_expense(expense_id: int, user_id: int):
     if existing_travel.get("id_user") != user_id:
         abort(403, description="Unauthorized to update this expense")
     current_app.logger.info("In DELETE /api//expenses/<int:expense_id>/user/<int:user_id>")
+
+    response = None
     try:
-        response = delete(expense_id)
-        response = jsonify(response), 200
+        deleted_message = delete(expense_id)
+        response = jsonify(deleted_message), 200
     except ValueError as error:
         current_app.logger.error(error)
         response = jsonify(error.args[0]), error.args[1]
     except Exception as e:
         current_app.logger.error(e)
         response = (
-            jsonify({"message": "Une erreur est survenue lors de la suppression du note de frais"}),
+            jsonify(
+                {"message": "Une erreur est survenue lors de la suppression de la note de frais"}
+            ),
             500,
         )
-    finally:
-        return response
+    return response

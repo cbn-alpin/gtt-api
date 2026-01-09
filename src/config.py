@@ -61,7 +61,9 @@ class ConfigLoader:
             )
             if field.name in data:
                 if isinstance(field.type, type) and issubclass(field.type, list):
-                    values[field.name] = self.load_list(data[field.name], typing.get_args(field.type)[0])
+                    values[field.name] = self.load_list(
+                        data[field.name], typing.get_args(field.type)[0]
+                    )
                 else:
                     values[field.name] = data[field.name]
             elif not has_default:
@@ -96,7 +98,7 @@ class ConfigLoader:
                 return self._load_from_file()
             return self._load_from_env()
         except KeyError as exc:
-            raise ConfigEntryMissing(exc.args[0], self._config_file_path)
+            raise ConfigEntryMissing(exc.args[0], self._config_file_path) from exc
 
 
 def get_config() -> Config:

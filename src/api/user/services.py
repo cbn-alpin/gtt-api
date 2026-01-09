@@ -1,10 +1,7 @@
 import hashlib
-from enum import Enum
 
 import sqlalchemy
-from flask import abort, current_app, json
-from flask_sqlalchemy import SQLAlchemy
-from marshmallow import EXCLUDE
+from flask import abort, current_app
 
 from src.api.action.schema import ActionSchema
 from src.api.exception import DBInsertException

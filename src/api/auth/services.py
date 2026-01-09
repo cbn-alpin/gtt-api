@@ -2,15 +2,14 @@ import hashlib
 from functools import wraps
 
 import requests
-from flask import abort, current_app, jsonify
+from flask import abort, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt, jwt_required
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
-from src import api
 from src.api import user
 from src.api.auth.schema import AuthInputSchema
-from src.api.exception import MissingFieldError, NotFoundError
+from src.api.exception import NotFoundError
 from src.config import get_config
 from src.database import db
 from src.models import User
@@ -25,10 +24,7 @@ def gtt_auth(data: AuthInputSchema) -> user:
         db.session.query(User).filter(User.email == login, User.password == hashed_password).first()
     )
     if user:
-        if user.is_admin:
-            role = "admin"
-        else:
-            role = "user"
+        role = "admin" if user.is_admin else "user"
         identity = data["login"]
 
         access_token = create_access_token(
@@ -122,10 +118,7 @@ def google_auth(data):
     # Look up or create user in DB
     user = db.session.query(User).filter(User.email == email).first()
     if user:
-        if user.is_admin:
-            role = "admin"
-        else:
-            role = "user"
+        role = "admin" if user.is_admin else "user"
         identity = user.email
 
         access_token = create_access_token(

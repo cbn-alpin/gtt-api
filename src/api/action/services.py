@@ -1,13 +1,11 @@
 import sqlalchemy
 from flask import abort, current_app
-from flask_sqlalchemy import SQLAlchemy
 from marshmallow import EXCLUDE
 
 from src.api.action.schema import ActionSchema
 from src.api.exception import DBInsertException
-from src.api.project.schema import ProjectSchema
 from src.database import db
-from src.models import Action, Project
+from src.models import Action
 
 
 def create_action(action: dict) -> int:
@@ -18,20 +16,17 @@ def create_action(action: dict) -> int:
             description=action.get("description"),
             id_project=action.get("id_project"),
         )
-
         db.session.add(new_action)
         db.session.commit()
         return new_action.id_action
-
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ActionDBService - insert : {error}")
-        raise DBInsertException()
-
+        raise DBInsertException() from error
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"ActionDBService - insert : {error}")
-        raise DBInsertException()
+        raise DBInsertException() from error
 
 
 def get_action_by_id(action_id: int):

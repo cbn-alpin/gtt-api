@@ -65,7 +65,6 @@ CORS(api)
 
 @api.route("/health", methods=["GET"])
 def health():
-    # Handle here any business logic for ensuring you're application is healthy (DB connections, etc...)
     return "Healthy: OK"
 
 
@@ -77,7 +76,10 @@ def page_not_found(e):
                 "status": "error",
                 "type": "NOT_FOUND",
                 "code": "RESOURCE_NOT_FOUND",
-                "message": "The requested URL was not found on the server. You can check available endpoints at /",
+                "message": (
+                    "The requested URL was not found on the server. "
+                    "You can check available endpoints at /"
+                ),
             }
         ),
         404,

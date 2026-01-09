@@ -8,7 +8,6 @@ from src.api.userActionTime.services import (
     get_user_project_actions_time_entries,
     get_user_projects_time_by_id,
 )
-from src.models import User
 
 resources = Blueprint("users_action_time", __name__)
 

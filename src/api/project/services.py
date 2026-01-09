@@ -1,10 +1,7 @@
 from datetime import date, datetime
-from enum import Enum
 
 import sqlalchemy
-from flask import abort, current_app, json
-from flask_sqlalchemy import SQLAlchemy
-from marshmallow import EXCLUDE
+from flask import current_app
 
 from src.api.action.schema import ActionSchema
 from src.api.exception import DBInsertException, DeleteError, UpdateError
@@ -133,7 +130,10 @@ def delete(project_id: int):
         if total_duration and total_duration > 0:
             raise DeleteError(
                 {
-                    "message": f"Le projet '{project_id}' ne peut pas être supprimé car des saisies du temps y sont associés"
+                    "message": (
+                        f"Le projet '{project_id}' ne peut pas être supprimé "
+                        "car des saisies du temps y sont associés"
+                    )
                 }
             )
 

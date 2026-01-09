@@ -42,22 +42,28 @@ def get_travels_by_user(user_id: int):
                 abort(400, description="Start date after end date")
         except ValueError:
             abort(400, description="Invalid date format")
+
     response = None
     try:
         response = get_travels(user_id, date_start=date_start, date_end=date_end)
         response = jsonify(response), 200
-        return response
     except ValueError as error:
         current_app.logger.error(error)
         response = "Request error", 400
-        return response
     except Exception as e:
         current_app.logger.error(e)
         response = (
-            "Une erreur est survenue lors de la récupération des données frais de déplacements",
-            400,
+            jsonify(
+                {
+                    "message": (
+                        "Une erreur est survenue lors de la récupération "
+                        "des données frais de déplacements"
+                    )
+                }
+            ),
+            500,
         )
-        return response
+    return response
 
 
 @resources.route("/travels/<int:travel_id>/user/<int:user_id>", methods=["PUT"])
@@ -68,7 +74,7 @@ def update_travel(travel_id: int, user_id: int):
         abort(404, description="Travel not found")
     if existing_travel.get("id_user") != user_id:
         abort(403, description="Unauthorized to update this travel")
-    current_app.logger.info(f"In PUT /api/travels/<int:travel_id>")
+    current_app.logger.info("In PUT /api/travels/<int:travel_id>")
     posted_data = request.get_json()
     response = update(posted_data, travel_id)
     response = jsonify(response), 200
@@ -76,23 +82,29 @@ def update_travel(travel_id: int, user_id: int):
 
 
 @resources.route("/travels/<int:travel_id>/user/<int:user_id>", methods=["DELETE"])
-# @user_required
-def delete_project(travel_id: int, user_id: int):
+@user_required
+def delete_travel(travel_id: int, user_id: int):
     current_app.logger.info("In DELETE /api/travels/<int:travel_id>/user/<int:user_id>")
+    response = None
     try:
         existing_travel = get_travel_by_id(travel_id)
         if existing_travel.get("id_user") != user_id:
             abort(403, description="Unauthorized to update this travel")
-        response = delete(travel_id)
-        response = jsonify(response), 200
+        deleted_message = delete(travel_id)
+        response = jsonify(deleted_message), 200
     except ValueError as error:
         current_app.logger.error(error)
         response = jsonify(error.args[0]), error.args[1]
     except Exception as e:
         current_app.logger.error(e)
         response = (
-            jsonify({"message": "Une erreur est survenue lors de la suppression du projet"}),
+            jsonify(
+                {
+                    "message": (
+                        "Une erreur est survenue lors de la suppression des frais de déplacement"
+                    )
+                }
+            ),
             500,
         )
-    finally:
-        return response
+    return response

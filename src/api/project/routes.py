@@ -15,7 +15,6 @@ from src.api.project.services import (
 )
 from src.api.project.services import get_project_by_id as project_by_id
 from src.config import get_config
-from src.models import Project
 
 resources = Blueprint("projects", __name__)
 
@@ -42,7 +41,6 @@ def post_project():
     return jsonify({"message": "Project created", "project": project_id}), 201
 
 
-# Get all projects
 @resources.route("/projects", methods=["GET"])
 @jwt_required()
 def get_projects():
@@ -62,7 +60,6 @@ def get_projects():
         return response
 
 
-# Get archived projects
 @resources.route("/projects/archived", methods=["GET"])
 @jwt_required()
 def get_archived_projects():
@@ -111,7 +108,7 @@ def get_project_by_id(project_id: int):
 @resources.route("/projects/<int:project_id>", methods=["PUT"])
 @admin_required
 def update_project(project_id: int):
-    current_app.logger.info(f"In PUT /api/projects/<int:project_id>")
+    current_app.logger.info("In PUT /api/projects/<int:project_id>")
     posted_data = request.get_json()
     if posted_data.get("start_date") and posted_data.get("end_date"):
         try:

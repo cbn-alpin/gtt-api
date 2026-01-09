@@ -1,7 +1,5 @@
 from marshmallow import Schema, fields
 
-from src.api.action.schema import ActionSchema
-
 
 class AuthInputSchema(Schema):
     login = fields.String(required=True)

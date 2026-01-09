@@ -1,12 +1,7 @@
-from datetime import datetime
-
-from flask import Blueprint, abort, current_app, jsonify, request
+from flask import Blueprint, abort, current_app, jsonify
 
 from src.api.auth.services import user_required
-from src.api.project.services import create_project, delete, get_all_projects, update
-from src.api.project.services import get_project_by_id as project_by_id
 from src.api.userAction.services import create_user_action, delete_user_action_service
-from src.models import Project
 
 resources = Blueprint("user_action", __name__)
 

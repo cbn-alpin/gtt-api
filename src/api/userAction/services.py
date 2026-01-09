@@ -19,7 +19,7 @@ def create_user_action(user_id: int, action_id: int) -> dict:
     except IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"UserActionService - create : {error}")
-        raise DBInsertException()
+        raise DBInsertException() from error
     except Exception as error:
         db.session.rollback()
         current_app.logger.error(f"UserActionService - create : {error}")
@@ -27,7 +27,9 @@ def create_user_action(user_id: int, action_id: int) -> dict:
 
 def delete_user_action_service(user_id: int, action_id: int):
     """Delete a user action."""
-    user_action = db.session.query(UserAction).filter_by(id_user=user_id, id_action=action_id).first()
+    user_action = (
+        db.session.query(UserAction).filter_by(id_user=user_id, id_action=action_id).first()
+    )
     if not user_action:
         raise ValueError("User action not found")
 

@@ -9,7 +9,6 @@ from src.api.user.services import (
     get_users,
     update_user,
 )
-from src.models import User
 
 resources = Blueprint("users", __name__)
 
@@ -58,8 +57,7 @@ def get_all_users():
     except Exception as e:
         current_app.logger.error(e)
         response = jsonify({"message": "An error occurred while retrieving user data"}), 500
-    finally:
-        return response
+    return response
 
 
 # Get a user by ID
@@ -73,20 +71,20 @@ def get_user_by_id_route(user_id: int):
         if not user:
             return jsonify({"message": "User not found"}), 404
         response = jsonify(user), 200
-        return response
     except ValueError as error:
         current_app.logger.error(error)
         response = jsonify(error.args[0]), error.args[1]
     except Exception as e:
         current_app.logger.error(e)
         response = jsonify({"message": "An error occurred while retrieving user data"}), 500
+    return response
 
 
 # Update a user by ID
 @resources.route("/users/<int:user_id>", methods=["PUT"])
 @user_required
 def update_user_route(user_id: int):
-    current_app.logger.info(f"In PUT /api/users/<int:user_id>")
+    current_app.logger.info("In PUT /api/users/<int:user_id>")
     posted_data = request.get_json()
     response = update_user(posted_data, user_id)
     response = jsonify(response), 200
@@ -98,6 +96,7 @@ def update_user_route(user_id: int):
 @admin_required
 def delete_user_route(user_id: int):
     current_app.logger.info("In DELETE /api/users/<int:user_id>")
+    response = None
     try:
         response = delete_user(user_id)
         response = jsonify(response), 200
@@ -107,5 +106,4 @@ def delete_user_route(user_id: int):
     except Exception as e:
         current_app.logger.error(e)
         response = jsonify({"message": "An error occurred while deleting the user"}), 500
-    finally:
-        return response
+    return response
