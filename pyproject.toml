@@ -55,6 +55,7 @@ fallback_version = "0.0.0" # Optionnel : une version par défaut si le fichier m
 [tool.pytest.ini_options]
 minversion = "9.0"
 testpaths = ["tests"]
+pythonpath = ["."]
 python_files = ["test_*.py"]
 env_files = [
     ".env.test"
@@ -100,4 +101,3 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "lf"
-
