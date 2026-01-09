@@ -1,4 +1,4 @@
-#+----------------------------------------------------------------------+
+# +----------------------------------------------------------------------+
 # BUILDER
 
 # Pull official base image
@@ -15,24 +15,25 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
         apt-get install -y --quiet --no-install-recommends \
-        gcc libyaml-dev \
+        git \
     && apt-get -y autoremove \
     && apt-get clean autoclean \
-    && rm -fr /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
-
-# Lint
-RUN pip install --upgrade pip
-# TODO: See if we need to install and run Flake8
-# RUN pip install flake8==6.0.0
-COPY . /usr/src/app/
-# RUN flake8 --ignore=E501,F401 .
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install python dependencies
+RUN pip install --upgrade pip
+
+# Copy the entire project context, including the .git directory.
+COPY . /usr/src/app/
+
+# Build the wheel archive.
+# setuptools-scm will be triggered here, using Git to determine the version
+# and embedding it into the wheel's metadata.
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels .
 
 
-#+----------------------------------------------------------------------+
-# Base
+# +----------------------------------------------------------------------+
+# BASE
 
 # Pull official base image
 FROM python:3.12.6-slim-bullseye AS base
@@ -40,7 +41,8 @@ FROM python:3.12.6-slim-bullseye AS base
 # Set default environment variables
 ENV HOME="/home/app"
 ENV APP_HOME="/home/app/web"
-ENV FLASK_APP="src/main.py"
+ENV FLASK_APP=src.main:api
+ENV APP_PORT=5001
 
 # Create new user "app" with group and home directory
 RUN useradd --create-home --shell /bin/bash app
@@ -48,61 +50,60 @@ RUN useradd --create-home --shell /bin/bash app
 # Uncomment alias from user "app" .bashrc file
 RUN sed -i -r 's/^#(alias|export|eval)/\1/' "$HOME/.bashrc"
 
-# Create the web app directory and set as default
-RUN mkdir $APP_HOME
+# Create the web app directory and set it as the working directory
 WORKDIR $APP_HOME
 
 # Install additional packages
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
         apt-get install -y --quiet --no-install-recommends \
-        netcat vim iputils-ping curl \
+        curl \
     && apt-get -y autoremove \
     && apt-get clean autoclean \
-    && rm -fr /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/*
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Add /etc/vim/vimrc.local
-RUN echo "runtime! defaults.vim" > /etc/vim/vimrc.local \
-    && echo "let g:skip_defaults_vim = 1" >> /etc/vim/vimrc.local  \
-    && echo "set mouse=" >> /etc/vim/vimrc.local
-
-# Copy files from "builder" temporary image
+# Copy application and dependencies from the builder stage
 COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/VERSION.txt .
 
-# Install dependencies
-RUN pip install --upgrade pip
-RUN pip install --no-cache /wheels/*
+# Copy files needed at runtime by the application (Alembic migrations, pyproject.toml)
+# At runtime Alembic searches for the "migrations" directory in the current working directory
+# which is set to APP_HOME (/home/app/web) !
+COPY pyproject.toml .
+COPY migrations/ migrations/
 
-# Copy project
-COPY . $APP_HOME
-
-# Chown all the files to the "app" user
-RUN chown -R app:app $APP_HOME
+# Install the application and its dependencies
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir /wheels/* \
+    #&& rm -rf /wheels \
+    && chown -R app:app $APP_HOME
 
 # Change to the "app" user
 USER app
 
-EXPOSE 5001
+EXPOSE $APP_PORT
 VOLUME ./config/
 VOLUME ./var/log/
 
 
-#+----------------------------------------------------------------------+
-# Development
+# +----------------------------------------------------------------------+
+# DEVELOPMENT
 FROM base AS development
 
-RUN export FLASK_APP=src/main.py
-RUN set FLASK_APP=src/main.py
 
-CMD ["flask", "run", "-h", "0.0.0.0", "-p", "5001"]
+CMD flask run -h 0.0.0.0 -p $APP_PORT
 
-#+----------------------------------------------------------------------+
-# Production
+
+# +----------------------------------------------------------------------+
+# PRODUCTION
 FROM base AS production
 
 RUN pip install --no-cache-dir --user gunicorn==21.2.0
 
 ENV PATH="$PATH:${HOME}/.local/bin"
+
+# Copy files needed to run the container
+COPY entrypoint.sh .
 
 ENTRYPOINT ["/home/app/web/entrypoint.sh"]
 
@@ -111,4 +112,4 @@ HEALTHCHECK \
     --timeout=30s \
     --start-period=5s \
     --retries=3 \
-    CMD curl --fail --silent http://localhost:5001/health || exit 1
+    CMD curl --fail --silent http://localhost:${APP_PORT}/health || exit 1

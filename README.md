@@ -169,3 +169,9 @@ source ./.venv/bin/activate
 # Create new Alembic revision:
 alembic revision --autogenerate -m "<my-revision-message>"
 ```
+
+## Docker
+
+To build an image localy with Flask development server use: `docker build -t gtt-api:develop --target development .`
+
+Then, you can run the this image like this: `docker run -it --rm -p 5001:5001 --env CONFIG_PATH=/home/app/web/.env --volume .env:/home/app/web/.env gtt-api:develop`
