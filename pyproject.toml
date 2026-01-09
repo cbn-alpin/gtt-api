@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=80", "setuptools-scm[simple]>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "gtt-api"
 dynamic = ["version"]
@@ -39,12 +43,14 @@ dev = ["click~=8.3", "pytest~=9.0", "pytest-dotenv~=0.5", "ruff~=0.14"]
 Repository = "https://github.com/cbn-alpin/gtt-api"
 Issues = "https://github.com/cbn-alpin/gtt-api/issues"
 
-[build-system]
-requires = ["setuptools>=80", "setuptools-scm[simple]>=8", "wheel"]
-build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+where = ["src"]
 
-[tool.setuptools]
-packages = ["src"]
+[tool.setuptools_scm]
+# Écrit la version dans un fichier VERSION à la racine.
+# Ce fichier sera lu par setuptools lors du build dans un environnement sans Git (comme Docker).
+write_to = "VERSION.txt"
+fallback_version = "0.0.0" # Optionnel : une version par défaut si le fichier manque aussi
 
 [tool.pytest.ini_options]
 minversion = "9.0"
@@ -94,3 +100,4 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "lf"
+

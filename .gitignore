@@ -1,6 +1,4 @@
-config/config.yml
-config/config.local.yml
-config/google-credentials.json
+VERSION.txt
 .flaskenv
 *.ztr-directory
 

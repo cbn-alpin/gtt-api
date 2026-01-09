@@ -15,9 +15,6 @@ from src.api.userActionTime.routes import resources as users_action_time_ressour
 from src.config import get_config
 from src.database import db, init_db_and_migrations
 
-__version__ = "0.1.0"
-
-
 jwt = JWTManager()
 
 
