@@ -44,15 +44,11 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"travelDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"travelDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
 
@@ -92,7 +88,6 @@ def get_travels(user_id, date_start: str = None, date_end: str = None):
             travel_data["total_expense"] = expense_data["amount"] if expense_data else 0.0
             list_travels.append(travel_data)
 
-    db.session.close()
     return list_travels
 
 
@@ -117,7 +112,6 @@ def get_travel_by_id(travel_id: int):
 
     travel["list_expenses"] = expenses if expenses else None
 
-    db.session.close()
     return travel
 
 
@@ -125,7 +119,6 @@ def update(travel_data, travel_id):
     data = TravelPutSchema().load(travel_data)
     db.session.query(Travel).filter_by(id_travel=travel_id).update(data)
     db.session.commit()
-    db.session.close()
     return get_travel_by_id(travel_id)
 
 
@@ -141,6 +134,3 @@ def delete(travel_id: int):
         db.session.rollback()
         current_app.logger.error(f"TravelDBService - delete : {error}")
         raise
-    finally:
-        if db.session is not None:
-            db.session.close()

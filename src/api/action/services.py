@@ -26,15 +26,11 @@ def create_action(action: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ActionDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"ActionDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
 
@@ -42,7 +38,6 @@ def get_action_by_id(action_id: int):
     action_object = db.session.query(Action).filter(Action.id_action == action_id).first()
     schema = ActionSchema()
     action = schema.dump(action_object)
-    db.session.close()
     return action
 
 
@@ -54,7 +49,6 @@ def update(action, action_id):
     data = ActionSchema().load(action, unknown=EXCLUDE)
     db.session.query(Action).filter_by(id_action=action_id).update(data)
     db.session.commit()
-    db.session.close()
     return get_action_by_id(action_id)
 
 
@@ -63,7 +57,6 @@ def delete(action_id: int):
         db.session.query(Action).filter_by(id_action=action_id).delete()
         db.session.commit()
 
-        db.session.close()
         return {"message": f"Le projet '{action_id}' a été supprimé"}
     except Exception as error:
         db.session.rollback()
@@ -73,6 +66,3 @@ def delete(action_id: int):
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")
         raise
-    finally:
-        if db.session is not None:
-            db.session.close()

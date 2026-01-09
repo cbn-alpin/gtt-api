@@ -26,7 +26,6 @@ def gtt_auth(data: AuthInputSchema) -> user:
     user = (
         db.session.query(User).filter(User.email == login, User.password == hashed_password).first()
     )
-    db.session.close()
     if user:
         if user.is_admin:
             role = "admin"
@@ -124,7 +123,6 @@ def google_auth(data):
 
     # Look up or create user in DB
     user = db.session.query(User).filter(User.email == email).first()
-    db.session.close()
     if user:
         if user.is_admin:
             role = "admin"

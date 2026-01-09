@@ -32,14 +32,10 @@ def create_project(data: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
 
@@ -67,7 +63,6 @@ def get_project_by_id(project_id: int):
     else:
         project["list_action"] = None
 
-    db.session.close()
     return project
 
 
@@ -92,7 +87,6 @@ def get_all_projects():
             project["list_action"] = None if not action else [action]
             list_projects.append(project)
 
-    db.session.close()
     return list_projects
 
 
@@ -105,14 +99,10 @@ def get_archived_project():
         projects = schema.dump(projects_objects)
         for project in projects:
             project["list_action"] = []
-        db.session.close()
         return projects
     except ValueError as error:
         current_app.logger.error(f"ProjectDBService - get_archived_projects : {error}")
         raise
-    finally:
-        if db.session is not None:
-            db.session.close()
 
 
 def update(project, project_id):
@@ -131,7 +121,6 @@ def update(project, project_id):
             )
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
-    db.session.close()
     return get_project_by_id(project_id)
 
 
@@ -156,6 +145,3 @@ def delete(project_id: int):
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")
         raise
-    finally:
-        if db.session is not None:
-            db.session.close()

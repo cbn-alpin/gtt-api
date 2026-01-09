@@ -133,7 +133,6 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
             project["list_action"] = [action]
             list_projects.append(project)
 
-    db.session.close()
     return list_projects
 
 

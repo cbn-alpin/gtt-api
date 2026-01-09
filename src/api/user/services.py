@@ -37,7 +37,6 @@ def get_user_projects_by_id(user_id: int):
             project["list_action"] = [action]
             list_projects.append(project)
 
-    db.session.close()
     return list_projects
 
 
@@ -60,14 +59,10 @@ def create_user(data: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"UserDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"UserDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
 
@@ -76,14 +71,10 @@ def get_users():
     try:
         users_objects = db.session.query(User)
         users = [UserSchema().dump(user) for user in users_objects]
-        db.session.close()
         return users
     except ValueError as error:
         current_app.logger.error(f"UserDBService - get_all_users : {error}")
         raise
-    finally:
-        if db.session is not None:
-            db.session.close()
 
 
 def update_user(data, user_id):
@@ -101,7 +92,6 @@ def update_user(data, user_id):
 
     db.session.query(User).filter_by(id_user=user_id).update(user)
     db.session.commit()
-    db.session.close()
     return get_user_by_id(user_id)
 
 
@@ -109,8 +99,6 @@ def delete_user(user_id: int):
     try:
         db.session.query(User).filter_by(id_user=user_id).delete()
         db.session.commit()
-
-        db.session.close()
         return {"message": f"Le user '{user_id}' a été supprimé"}
     except Exception as error:
         db.session.rollback()
@@ -120,12 +108,8 @@ def delete_user(user_id: int):
         db.session.rollback()
         current_app.logger.error(f"UserDBService - delete : {error}")
         raise
-    finally:
-        if db.session is not None:
-            db.session.close()
 
 
 def get_user_by_id(user_id: int):
     user_object = db.session.query(User).filter_by(id_user=user_id).first()
-    db.session.close()
     return user_object.email

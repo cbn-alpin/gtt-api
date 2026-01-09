@@ -24,15 +24,11 @@ def create_expense(expense: dict, travel_id: int) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ExpenseDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"ExpenseDBService - insert : {error}")
-        if db.session is not None:
-            db.session.close()
         raise DBInsertException()
 
 
@@ -40,7 +36,6 @@ def get_expense_by_id(expense_id: int):
     action_object = db.session.query(Expense).filter(Expense.id_expense == expense_id).first()
     schema = ExpenseTravelSchema()
     action = schema.dump(action_object)
-    db.session.close()
     return action
 
 
@@ -48,7 +43,6 @@ def update(expense_data, expense_id):
     data = ExpensePostSchema().load(expense_data)
     db.session.query(Expense).filter_by(id_expense=expense_id).update(data)
     db.session.commit()
-    db.session.close()
     return get_expense_by_id(expense_id)
 
 
@@ -56,8 +50,6 @@ def delete(expense_id: int):
     try:
         db.session.query(Expense).filter_by(id_expense=expense_id).delete()
         db.session.commit()
-
-        db.session.close()
         return {"message": f"La note du frais '{expense_id}' a été supprimé"}
     except Exception as error:
         db.session.rollback()
@@ -67,6 +59,3 @@ def delete(expense_id: int):
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")
         raise
-    finally:
-        if db.session is not None:
-            db.session.close()
