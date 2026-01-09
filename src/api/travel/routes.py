@@ -64,7 +64,6 @@ def get_travels_by_user(user_id: int):
 @user_required
 def update_travel(travel_id: int, user_id: int):
     existing_travel = get_travel_by_id(travel_id)
-    print(existing_travel)
     if not existing_travel:
         abort(404, description="Travel not found")
     if existing_travel.get("id_user") != user_id:

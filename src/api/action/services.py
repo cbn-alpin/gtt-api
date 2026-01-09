@@ -43,7 +43,6 @@ def get_action_by_id(action_id: int):
 
 def update(action, action_id):
     existing_action = get_action_by_id(action_id)
-    print(existing_action)
     if not existing_action:
         abort(404, description="Action not found")
     data = ActionSchema().load(action, unknown=EXCLUDE)
@@ -59,10 +58,6 @@ def delete(action_id: int):
 
         return {"message": f"Le projet '{action_id}' a été supprimé"}
     except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - delete : {error}")
-        raise
-    except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - delete : {error}")
         raise

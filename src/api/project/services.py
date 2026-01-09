@@ -32,11 +32,11 @@ def create_project(data: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - insert : {error}")
-        raise DBInsertException()
+        raise DBInsertException() from error
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"ProjectDBService - insert : {error}")
-        raise DBInsertException()
+        raise DBInsertException() from error
 
 
 def get_project_by_id(project_id: int):
@@ -94,7 +94,6 @@ def get_archived_project():
     projects = []
     try:
         projects_objects = db.session.query(Project).filter(Project.is_archived == True)
-        print(projects_objects)
         schema = ProjectSchema(many=True)
         projects = schema.dump(projects_objects)
         for project in projects:

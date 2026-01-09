@@ -15,8 +15,6 @@ from src.config import get_config
 from src.database import db
 from src.models import User
 
-print(hashlib.md5("whatever your string is".encode("utf-8")).hexdigest())
-
 
 def gtt_auth(data: AuthInputSchema) -> user:
     login = data["login"]

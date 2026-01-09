@@ -58,12 +58,12 @@ def create_user(data: dict) -> int:
 
     except ValueError as error:
         db.session.rollback()
-        current_app.logger.error(f"UserDBService - insert : {error}")
-        raise DBInsertException()
+        current_app.logger.error(f"UserDBService - insert value error: {error}")
+        raise DBInsertException() from error
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
-        current_app.logger.error(f"UserDBService - insert : {error}")
-        raise DBInsertException()
+        current_app.logger.error(f"UserDBService - insert integrity error: {error}")
+        raise DBInsertException() from error
 
 
 def get_users():
@@ -100,10 +100,6 @@ def delete_user(user_id: int):
         db.session.query(User).filter_by(id_user=user_id).delete()
         db.session.commit()
         return {"message": f"Le user '{user_id}' a été supprimé"}
-    except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"UserDBService - delete : {error}")
-        raise
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"UserDBService - delete : {error}")
@@ -112,4 +108,7 @@ def delete_user(user_id: int):
 
 def get_user_by_id(user_id: int):
     user_object = db.session.query(User).filter_by(id_user=user_id).first()
-    return user_object.email
+    if user_object:
+        # Le dump va sérialiser l'objet. La session restera active jusqu'à la fin de la requête.
+        return UserSchema().dump(user_object)
+    return None

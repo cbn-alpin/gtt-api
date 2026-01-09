@@ -44,12 +44,12 @@ def create_travel(user_id, project_id, travel_data: dict) -> int:
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"travelDBService - insert : {error}")
-        raise DBInsertException()
+        raise DBInsertException() from error
 
     except sqlalchemy.exc.IntegrityError as error:
         db.session.rollback()
         current_app.logger.error(f"travelDBService - insert : {error}")
-        raise DBInsertException()
+        raise DBInsertException() from error
 
 
 def get_travels(user_id, date_start: str = None, date_end: str = None):
@@ -126,10 +126,6 @@ def delete(travel_id: int):
     try:
         db.session.query(Travel).filter_by(id_travel=travel_id).delete()
         db.session.commit()
-    except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"TravelDBService - delete : {error}")
-        raise
     except ValueError as error:
         db.session.rollback()
         current_app.logger.error(f"TravelDBService - delete : {error}")
