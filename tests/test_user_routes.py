@@ -1,5 +1,7 @@
 import pytest
 
+from tests.conftest import TEST_DATABASE_URL
+
 
 @pytest.fixture
 def create_user(admin_client):
@@ -63,6 +65,10 @@ def test_get_user_projects(user_client, link_user_actions):
     assert len(data) == 1
 
 
+@pytest.mark.skipif(
+    TEST_DATABASE_URL.startswith("sqlite"),
+    reason="SQLite can't use generate_series function used in the code.",
+)
 @pytest.mark.parametrize(
     ("date_start", "date_end", "expected_status"),
     [
