@@ -20,30 +20,27 @@ Navigate to the cloned project folder:
 cd gtt-api/
 ```
 
-Create a virtual environment:
-
-```bash
-python3 -m venv .venv
-```
-
-Activate the virtual environment:
-
-```bash
-source ./.venv/bin/activate
-```
 ## Dependencies
 
 Install Python dependencies defined in *pyproject.toml*:
 
+Install _uv_. See: https://docs.astral.sh/uv/getting-started/installation/
+
+Synchronise the app (install the `.venv` and dependencies):
 ```bash
-# In development
-pip install -e .
-pip install -e .[dev]
-# In production
-pip install .
+# Install applications dependencies
+uv sync
+# Install development dependencies
+uv sync --extra dev
 ```
 
 **Note**: we don't use *requirements.txt* file in this project.
+
+Then, run command inside the `.venv` with:
+
+```bash
+uv run <command>
+```
 
 ## Configuration file
 
@@ -53,7 +50,7 @@ Create a *.env* configuration file and **adapt it to your configuration**:
 cp .env.sample .env
 ```
 
-If you change the location of the *.env* file, you must specify the path to the new location using the `CONFIG_PATH` environment variable.
+If you change the location of the *.env* file, you must specify the path to the new location using the `GTT_CONFIG_PATH` environment variable.
 
 ## Database
 
@@ -71,14 +68,15 @@ CREATE DATABASE <new-database-name> WITH TEMPLATE template0 OWNER <user-name>;
 GRANT ALL PRIVILEGES ON DATABASE <new-database-name> TO <user-name> ;
 ```
 
-The database content is installed by default when Flask is launch if it doesn't exist. The same applies to the migrations.
+The database content is installed by default when the Docker container is launch
+in production if it doesn't exist. The same applies to the migrations.
+
+In development, use the command: `flask db upgrade`
+
 Run Flask development server with :
 
 ```bash
-# If necessary, source the venv:
-source ./.venv/bin/activate
-# Run the Flask development server:
-FLASK_APP=src/main.py flask run
+uv run flask run
 ```
 
 You will see:
@@ -91,9 +89,9 @@ INFO in __init__: Database is up to date
 If a manual update is required, use the following command:
 
 ```bash
-alembic upgrade head
+uv run alembic upgrade head
 # If you had change the .env location used:
-# CONFIG_PATH=/new/location/.env alembic upgrade head
+# GTT_CONFIG_PATH=/new/location/.env alembic upgrade head
 ```
 
 **Note**: we used *pyproject.toml* instead of *alembic.ini*. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no *alembic.ini* file.
@@ -141,22 +139,14 @@ INSERT INTO user_action (id_user, id_action)
 Launch the Flask framework in development mode:
 
 ```bash
-# If necessary, source the venv:
-source ./.venv/bin/activate
-# Run the Flask development server:
-FLASK_APP=src/main.py flask run
-# If you had change the .env location used:
-# CONFIG_PATH=/new/location/.env FLASK_APP=src/main.py flask run
+uv run flask run
 ```
 **Note**: For production, we will use Gunicorn and Nginx within a Docker container.
 
 ## Running Tests
 
 ```bash
-# If necessary, source the venv:
-source ./.venv/bin/activate
-# Run the tests:
-FLASK_ENV=test pytest tests/test.py
+ur runn pytest
 ```
 
 ## Generate a Database Revision with Alembic
@@ -164,14 +154,57 @@ FLASK_ENV=test pytest tests/test.py
 To generate a new Alembic revision with the message `<my-revision-message>` :
 
 ```bash
-# If necessary, source the venv:
-source ./.venv/bin/activate
 # Create new Alembic revision:
-alembic revision --autogenerate -m "<my-revision-message>"
+uv run alembic revision --autogenerate -m "<my-revision-message>"
 ```
 
 ## Docker
 
-To build an image localy with Flask development server use: `docker build -t gtt-api:develop --target development .`
+This project is configured to be used with Docker and Docker Compose.
 
-Then, you can run the this image like this: `docker run -it --rm -p 5001:5001 --env CONFIG_PATH=/home/app/web/.env --volume .env:/home/app/web/.env gtt-api:develop`
+### Development Environment with Docker
+
+#### Docker only
+
+You can build the image :
+
+```bash
+docker build -t gtt-api:develop --target development .
+```
+
+Then, from the root directory of the project, you can run the application with:
+
+```bash
+docker run --rm -it -e GTT_DATABASE_IP="host.docker.internal" -e GTT_APP_PORT=5000 --volume .:/home/app/web/ gtt-api:develop
+```
+
+You can override the config file `.env` paremeters used by the Flask application with env variables using the same name prefixed by `GTT_`. Ex.: `GTT_DATABASE_IP`.
+
+Also, you can use:
+- `GTT_API_HOST_PORT`: to change the port of the API on the host machine.
+- `GTT_CONFIG_PATH`: to change the path of the `.env` file.
+- `GTT_APP_PORT`: to change the default port `5001` of the API.
+
+#### Docker Compose
+To easily launch the application in a development environment, use Docker Compose. This will build the `development` image and run it with your local source code mounted for hot-reloading.
+
+1.  Make sure you have a `.env` file (you can copy `.env.sample`).
+2.  Run the following command:
+
+```bash
+# Build and start the container in the background
+docker-compose up --build -d
+```
+
+The API will be available on your local machine at the port specified by `GTT_API_HOST_PORT` in your `docker-compose.yml` (default: `http://localhost:5001`). Use the `.env` file to change the port.
+
+To view the logs: `docker-compose logs -f`
+To stop the container: `docker-compose down`
+
+### Production Environment
+
+To build the production-ready image:
+
+```bash
+docker build -t gtt-api:latest --target production .
+```
