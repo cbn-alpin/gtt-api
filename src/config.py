@@ -1,6 +1,6 @@
 import dataclasses
+import os
 import typing
-from os import environ
 
 import tomllib
 
@@ -43,6 +43,8 @@ class Config:
 
 
 class ConfigLoader:
+    ENV_VAR_PREFIX = "GTT_"
+
     def __init__(self, config_file_path: typing.Optional[str]) -> None:
         self._config_file_path = config_file_path
 
@@ -53,12 +55,13 @@ class ConfigLoader:
 
         values = {}
         for field in dataclasses.fields(Config):
-            # Si le champ a une valeur par défaut, ne le chargez que s'il est présent.
-            # Sinon, le champ est obligatoire.
+            # If the field has a default value, only load it if it is present.
+            # Otherwise, the field is mandatory.
             has_default = (
                 field.default != dataclasses.MISSING
                 or field.default_factory != dataclasses.MISSING
             )
+
             if field.name in data:
                 if isinstance(field.type, type) and issubclass(field.type, list):
                     values[field.name] = self.load_list(
@@ -66,6 +69,11 @@ class ConfigLoader:
                     )
                 else:
                     values[field.name] = data[field.name]
+
+                # Override with environment variable if it exists
+                env_var_name = f"{self.ENV_VAR_PREFIX}{field.name.upper()}"
+                if env_var_name in os.environ:
+                    values[field.name] = os.environ[env_var_name]
             elif not has_default:
                 raise KeyError(field.name)
 
@@ -78,8 +86,14 @@ class ConfigLoader:
                 field.default != dataclasses.MISSING
                 or field.default_factory != dataclasses.MISSING
             )
-            if field.name.upper() in environ:
-                values[field.name] = environ[field.name.upper()]
+            env_var_name = field.name.upper()
+            if env_var_name in os.environ:
+                # Priority to prefixed env variable
+                prefixed_env_var_name = f"{self.ENV_VAR_PREFIX}{env_var_name}"
+                if prefixed_env_var_name in os.environ:
+                    env_var_name = prefixed_env_var_name
+
+                values[field.name] = os.environ[env_var_name]
             elif not has_default:
                 raise KeyError(field.name)
 
@@ -94,15 +108,16 @@ class ConfigLoader:
 
     def load(self) -> Config:
         try:
-            if self._config_file_path is not None:
-                return self._load_from_file()
+            return self._load_from_file() if self._config_file_path else self._load_from_env()
+        except FileNotFoundError:
+            # If the config file was specified but not found, fall back to environment variables.
             return self._load_from_env()
         except KeyError as exc:
             raise ConfigEntryMissing(exc.args[0], self._config_file_path) from exc
 
 
 def get_config() -> Config:
-    return ConfigLoader(environ.get("CONFIG_PATH", ".env")).load()
+    return ConfigLoader(os.environ.get(f"{ConfigLoader.ENV_VAR_PREFIX}CONFIG_PATH", ".env")).load()
 
 
 class ConfigLoaderError(Exception):
@@ -115,14 +130,14 @@ class ConfigEntryMissing(ConfigLoaderError):
             message = (
                 f"Configuration entry '{entry}' is missing. "
                 f"Please fill it in {config_file_path} configuration file "
-                f"or through {entry.upper()} env var."
+                f"or through {ConfigLoader.ENV_VAR_PREFIX}{entry.upper()} env var."
             )
         else:
             message = (
                 f"Configuration entry '{entry}' is missing. "
                 "Please fill it in configuration file and indicate "
                 "configuration file path through CONFIG_PATH env var, "
-                f"or fill this entry through {entry.upper()} env var."
+                f"or fill this entry through {ConfigLoader.ENV_VAR_PREFIX}{entry.upper()} env var."
             )
         super().__init__(message)
         self.entry = entry
