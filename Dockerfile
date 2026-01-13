@@ -39,19 +39,20 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels .
 FROM python:3.12.6-slim-bullseye AS base
 
 # Set default environment variables
-ENV HOME="/home/app"
-ENV APP_HOME="/home/app/web"
+ENV GTT_USER="app"
+ENV GTT_USER_HOME="/home/${GTT_USER}"
+ENV GTT_APP_HOME="${GTT_USER_HOME}/web"
+ENV GTT_APP_PORT=5001
 ENV FLASK_APP=src.main:api
-ENV APP_PORT=5001
 
 # Create new user "app" with group and home directory
 RUN useradd --create-home --shell /bin/bash app
 
 # Uncomment alias from user "app" .bashrc file
-RUN sed -i -r 's/^#(alias|export|eval)/\1/' "$HOME/.bashrc"
+RUN sed -i -r 's/^#(alias|export|eval)/\1/' "$GTT_USER_HOME/.bashrc"
 
 # Create the web app directory and set it as the working directory
-WORKDIR $APP_HOME
+WORKDIR $GTT_APP_HOME
 
 # Install additional packages
 RUN apt-get update \
@@ -61,6 +62,38 @@ RUN apt-get update \
     && apt-get -y autoremove \
     && apt-get clean autoclean \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Copy the entrypoint script and make it executable
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE $GTT_APP_PORT
+
+
+# +----------------------------------------------------------------------+
+# DEVELOPMENT
+FROM base AS development
+
+# Copy the application source code
+COPY . .
+
+# Install dependencies for development in editable mode
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -e ."[dev]" \
+    && chown -R app:app $GTT_APP_HOME
+
+# Run the Flask development server.
+# The shell form of CMD is used here so that the shell can expand $APP_PORT
+# before passing the command to the entrypoint. The entrypoint's `exec` will then
+# ensure the flask process becomes PID 1.
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD flask run --host=0.0.0.0 --port=$GTT_APP_PORT --debug
+
+USER $GTT_USER
+
+# +----------------------------------------------------------------------+
+# PRODUCTION
+FROM base AS production
 
 # Copy application and dependencies from the builder stage
 COPY --from=builder /usr/src/app/wheels /wheels
@@ -72,44 +105,24 @@ COPY --from=builder /usr/src/app/VERSION.txt .
 COPY pyproject.toml .
 COPY migrations/ migrations/
 
-# Install the application and its dependencies
+# Install the application and its dependencies from the wheel
 RUN pip install --upgrade pip \
+    && pip install --no-cache-dir --user gunicorn==21.2.0 \
     && pip install --no-cache-dir /wheels/* \
-    #&& rm -rf /wheels \
-    && chown -R app:app $APP_HOME
+    && rm -rf /wheels \
+    && chown -R app:app $GTT_APP_HOME
 
-# Change to the "app" user
-USER app
+ENV PATH="$PATH:${GTT_USER_HOME}/.local/bin"
 
-EXPOSE $APP_PORT
-VOLUME ./config/
-VOLUME ./var/log/
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# The shell form is used here for consistency and to allow expansion of APP_PORT.
+CMD gunicorn --bind "0.0.0.0:$GTT_APP_PORT" src.main:api
 
-
-# +----------------------------------------------------------------------+
-# DEVELOPMENT
-FROM base AS development
-
-
-CMD flask run -h 0.0.0.0 -p $APP_PORT
-
-
-# +----------------------------------------------------------------------+
-# PRODUCTION
-FROM base AS production
-
-RUN pip install --no-cache-dir --user gunicorn==21.2.0
-
-ENV PATH="$PATH:${HOME}/.local/bin"
-
-# Copy files needed to run the container
-COPY entrypoint.sh .
-
-ENTRYPOINT ["/home/app/web/entrypoint.sh"]
+USER $GTT_USER
 
 HEALTHCHECK \
     --interval=30s \
     --timeout=30s \
     --start-period=5s \
     --retries=3 \
-    CMD curl --fail --silent http://localhost:${APP_PORT}/health || exit 1
+    CMD curl --fail --silent http://localhost:${GTT_APP_PORT}/health || exit 1

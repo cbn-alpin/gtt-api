@@ -1,0 +1,21 @@
+services:
+  api-dev:
+    build:
+      context: .
+      target: development
+    container_name: gtt-api-dev
+    ports:
+      - "${GTT_API_HOST_PORT:-5001}:${GTT_APP_PORT:-5001}"
+    environment:
+      - GTT_APP_PORT=${GTT_APP_PORT:-5001}
+    volumes:
+      # Mount the local config file .env inside the container.
+      - ./.env:/home/app/web/.env
+
+      # Mount all the source code for the hot-reloading.
+      - ./src:/home/app/web/src
+      - ./migrations:/home/app/web/migrations
+      - ./pyproject.toml:/home/app/web/pyproject.toml
+    extra_hosts:
+      # Allowed the container to access host services (e.g., database)
+      - "host.docker.internal:host-gateway"

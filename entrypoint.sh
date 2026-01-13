@@ -1,6 +1,8 @@
 #!/bin/sh
 
-# Run database migrations
-flask db upgrade
+if [ "$FLASK_ENV" = "production" ]; then
+    echo "Running database migrations for production..."
+    flask db upgrade
+fi
 
-exec gunicorn --bind 0.0.0.0:5001 src.main:api
+exec "$@"
