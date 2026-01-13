@@ -1,7 +1,6 @@
 import marshmallow
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
 
 from src.api.action.routes import resources as actions_ressources
 from src.api.auth.routes import resources as auth_ressources
@@ -13,9 +12,8 @@ from src.api.user.routes import resources as users_ressources
 from src.api.userAction.routes import resources as users_action_ressources
 from src.api.userActionTime.routes import resources as users_action_time_ressources
 from src.config import get_config
-from src.database import db, init_db_and_migrations
-
-jwt = JWTManager()
+from src.database import db
+from src.extensions import jwt
 
 
 def create_api(config_overrides: dict = None):
@@ -39,6 +37,9 @@ def create_api(config_overrides: dict = None):
     jwt.init_app(app)
     db.init_app(app)
 
+    # Enable CORS globally for all routes
+    CORS(app)
+
     app.register_blueprint(projects_ressources, url_prefix="/api")
     app.register_blueprint(users_ressources, url_prefix="/api")
     app.register_blueprint(users_action_time_ressources, url_prefix="/api")
@@ -52,13 +53,6 @@ def create_api(config_overrides: dict = None):
 
 # Creating the Flask application
 api = create_api()
-
-# Database migration
-init_db_and_migrations(api, db)
-
-# Enable CORS globally for all routes
-CORS(api)
-
 
 @api.route("/health", methods=["GET"])
 def health():
