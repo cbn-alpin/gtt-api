@@ -13,7 +13,7 @@ from src.api.userAction.routes import resources as users_action_ressources
 from src.api.userActionTime.routes import resources as users_action_time_ressources
 from src.config import get_config
 from src.database import db
-from src.extensions import jwt
+from src.extensions import jwt, migrate
 
 
 def create_api(config_overrides: dict = None):
@@ -36,6 +36,7 @@ def create_api(config_overrides: dict = None):
 
     jwt.init_app(app)
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Enable CORS globally for all routes
     CORS(app)
