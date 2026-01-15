@@ -48,6 +48,15 @@ class ConfigLoader:
     def __init__(self, config_file_path: typing.Optional[str]) -> None:
         self._config_file_path = config_file_path
 
+    def _cast_value(self, field_type: type, value: str) -> typing.Any:
+        """Casts a string value to the specified type."""
+        if field_type is bool:
+            return value.lower() in ("true", "1", "t", "y", "yes")
+        if isinstance(field_type, type) and issubclass(field_type, list):
+            # Assuming list of strings for now as per load_list default
+            return self.load_list(value, typing.get_args(field_type)[0] or str)
+        return field_type(value)
+
     def _load_from_file(self) -> Config:
         assert self._config_file_path is not None
         with open(self._config_file_path, "rb") as file:
@@ -73,7 +82,7 @@ class ConfigLoader:
                 # Override with environment variable if it exists
                 env_var_name = f"{self.ENV_VAR_PREFIX}{field.name.upper()}"
                 if env_var_name in os.environ:
-                    values[field.name] = os.environ[env_var_name]
+                    values[field.name] = self._cast_value(field.type, os.environ[env_var_name])
             elif not has_default:
                 raise KeyError(field.name)
 
@@ -93,7 +102,7 @@ class ConfigLoader:
                 if prefixed_env_var_name in os.environ:
                     env_var_name = prefixed_env_var_name
 
-                values[field.name] = os.environ[env_var_name]
+                values[field.name] = self._cast_value(field.type, os.environ[env_var_name])
             elif not has_default:
                 raise KeyError(field.name)
 
