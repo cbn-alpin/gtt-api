@@ -1,3 +1,4 @@
+migrations/data/*.csv
 VERSION.txt
 .flaskenv
 *.ztr-directory

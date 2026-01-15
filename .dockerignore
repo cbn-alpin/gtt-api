@@ -7,3 +7,4 @@ __pycache__/
 .ruff_cache/
 .env
 .env.test
+migrations/data/default_users.csv
