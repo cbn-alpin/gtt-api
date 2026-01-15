@@ -7,12 +7,12 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
-from src.api import user
-from src.api.auth.schema import AuthInputSchema
-from src.api.exception import NotFoundError
-from src.config import get_config
-from src.database import db
-from src.models import User
+from gtt.api import user
+from gtt.api.auth.schema import AuthInputSchema
+from gtt.api.exception import NotFoundError
+from gtt.config import get_config
+from gtt.database import db
+from gtt.models import User
 
 
 def gtt_auth(data: AuthInputSchema) -> user:

@@ -3,11 +3,11 @@ from datetime import date, datetime
 import sqlalchemy
 from flask import current_app
 
-from src.api.action.schema import ActionSchema
-from src.api.exception import DBInsertException, DeleteError, UpdateError
-from src.api.project.schema import ProjectInputSchema, ProjectSchema, ProjectUpdateSchema
-from src.database import db
-from src.models import Action, Project, UserActionTime
+from gtt.api.action.schema import ActionSchema
+from gtt.api.exception import DBInsertException, DeleteError, UpdateError
+from gtt.api.project.schema import ProjectInputSchema, ProjectSchema, ProjectUpdateSchema
+from gtt.database import db
+from gtt.models import Action, Project, UserActionTime
 
 
 def create_project(data: dict) -> int:

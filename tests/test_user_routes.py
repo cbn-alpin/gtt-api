@@ -1,6 +1,5 @@
 import pytest
-
-from tests.conftest import TEST_DATABASE_URL
+from conftest import TEST_DATABASE_URL
 
 
 @pytest.fixture

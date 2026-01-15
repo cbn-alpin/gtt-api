@@ -2,8 +2,8 @@ from datetime import datetime
 
 from flask import Blueprint, abort, current_app, jsonify, request
 
-from src.api.auth.services import user_required
-from src.api.travel.services import create_travel, delete, get_travel_by_id, get_travels, update
+from gtt.api.auth.services import user_required
+from gtt.api.travel.services import create_travel, delete, get_travel_by_id, get_travels, update
 
 resources = Blueprint("travels", __name__)
 

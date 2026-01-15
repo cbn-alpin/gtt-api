@@ -3,10 +3,10 @@ from datetime import datetime
 from flask import abort
 from sqlalchemy import and_, func, literal_column, or_
 
-from src.api.exception import NotFoundError
-from src.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchema
-from src.database import db
-from src.models import Action, Project, User, UserAction, UserActionTime
+from gtt.api.exception import NotFoundError
+from gtt.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchema
+from gtt.database import db
+from gtt.models import Action, Project, User, UserAction, UserActionTime
 
 
 def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):
@@ -36,7 +36,6 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
 
 
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
-
     date_series = db.session.query(
         func.generate_series(
             literal_column(f"'{date_start}'::timestamp"),

@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, current_app, jsonify, request
 
-from src.api.action.services import create_action, delete, update
-from src.api.auth.services import admin_required
+from gtt.api.action.services import create_action, delete, update
+from gtt.api.auth.services import admin_required
 
 resources = Blueprint("actions", __name__)
 

@@ -8,8 +8,9 @@ from alembic import command
 from alembic.config import Config
 from flask_jwt_extended import create_access_token
 
-from src.main import create_api, db
-from src.models import User
+from gtt.database import db
+from gtt.main import create_api
+from gtt.models import User
 
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite:///:memory:")
 USE_ALEMBIC_MIGRATIONS = os.getenv("USE_ALEMBIC_MIGRATIONS", "0").lower() in ("1", "true", "yes")
@@ -82,7 +83,7 @@ def db_session(app):
         db.session.begin_nested()
         # Patch commit to be a flush, so that commits inside the application code
         # don't ruin the transaction isolation.
-        with patch("src.database.db.session.commit", db.session.flush):
+        with patch("gtt.database.db.session.commit", db.session.flush):
             yield db.session
         db.session.rollback()
 

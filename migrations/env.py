@@ -9,11 +9,11 @@ from sqlalchemy import engine_from_config, pool
 # Add the project directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from src.database import db
+from gtt.database import db
 
 # Import the Flask app and models
-from src.main import api
-from src.models import Base  # Import all your models here
+from gtt.main import api
+from gtt.models import Base  # Import all your models here
 
 target_metadata = Base.metadata
 

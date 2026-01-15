@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, current_app, jsonify, request
 
-from src.api.auth.services import admin_required, user_required
-from src.api.user.services import (
+from gtt.api.auth.services import admin_required, user_required
+from gtt.api.user.services import (
     create_user,
     delete_user,
     get_user_by_id,

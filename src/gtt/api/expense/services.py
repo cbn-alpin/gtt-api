@@ -1,10 +1,10 @@
 import sqlalchemy
 from flask import current_app
 
-from src.api.exception import DBInsertException
-from src.api.expense.schema import ExpensePostSchema, ExpenseTravelSchema
-from src.database import db
-from src.models import Expense
+from gtt.api.exception import DBInsertException
+from gtt.api.expense.schema import ExpensePostSchema, ExpenseTravelSchema
+from gtt.database import db
+from gtt.models import Expense
 
 
 def create_expense(expense: dict, travel_id: int) -> int:

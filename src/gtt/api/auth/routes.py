@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 
-from src.api.auth.schema import AuthInputSchema, UserAuthSchema
-from src.api.auth.services import google_auth, gtt_auth
+from gtt.api.auth.schema import AuthInputSchema, UserAuthSchema
+from gtt.api.auth.services import google_auth, gtt_auth
 
 resources = Blueprint("auth", __name__)
 

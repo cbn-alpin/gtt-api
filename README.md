@@ -175,7 +175,7 @@ docker build -t gtt-api:develop --target development .
 Then, from the root directory of the project, you can run the application with:
 
 ```bash
-docker run --rm -it -e GTT_DATABASE_IP="host.docker.internal" -e GTT_APP_PORT=5000 --volume .:/home/app/web/ gtt-api:develop
+docker run --rm -it -e GTT_DATABASE_IP="host.docker.internal" -e GTT_APP_PORT=5000 -e FLASK_APP=gtt.main:api --volume .:/home/app/web/ gtt-api:develop
 ```
 
 You can override the config file `.env` paremeters used by the Flask application with env variables using the same name prefixed by `GTT_`. Ex.: `GTT_DATABASE_IP`.
@@ -203,8 +203,13 @@ To stop the container: `docker-compose down`
 
 ### Production Environment
 
-To build the production-ready image:
+To locally build the production-ready image:
 
 ```bash
-docker build -t gtt-api:latest --target production .
+docker build -t gtt-api:production --target production .
+```
+To locally run the production image in host network:
+
+```bash
+docker run --rm -it -e GTT_APP_PORT=5000 -e FLASK_APP=gtt.main:api -e FLASK_ENV=production --volume .env:/home/app/web/.env --network host gtt-api:production
 ```

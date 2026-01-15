@@ -3,11 +3,11 @@ from datetime import datetime, timedelta
 import sqlalchemy
 from flask import current_app
 
-from src.api.exception import DBInsertException
-from src.api.expense.schema import ExpenseSchema
-from src.api.travel.schema import TravelPutSchema, TravelSchema
-from src.database import db
-from src.models import Expense, Project, Travel
+from gtt.api.exception import DBInsertException
+from gtt.api.expense.schema import ExpenseSchema
+from gtt.api.travel.schema import TravelPutSchema, TravelSchema
+from gtt.database import db
+from gtt.models import Expense, Project, Travel
 
 
 def create_travel(user_id, project_id, travel_data: dict) -> int:

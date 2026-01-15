@@ -43,7 +43,7 @@ ENV GTT_USER="app"
 ENV GTT_USER_HOME="/home/${GTT_USER}"
 ENV GTT_APP_HOME="${GTT_USER_HOME}/web"
 ENV GTT_APP_PORT=5001
-ENV FLASK_APP=src.main:api
+ENV FLASK_APP=gtt.main:api
 
 # Create new user "app" with group and home directory
 RUN useradd --create-home --shell /bin/bash app
@@ -104,7 +104,6 @@ COPY --from=builder /usr/src/app/VERSION.txt .
 # which is set to APP_HOME (/home/app/web) !
 COPY pyproject.toml .
 COPY migrations/ migrations/
-COPY src/ src/
 
 # Install the application and its dependencies from the wheel
 RUN pip install --upgrade pip \
@@ -115,7 +114,7 @@ RUN pip install --upgrade pip \
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # The shell form is used here for consistency and to allow expansion of APP_PORT.
-CMD gunicorn --bind "0.0.0.0:$GTT_APP_PORT" src.main:api
+CMD gunicorn --bind "0.0.0.0:$GTT_APP_PORT" $FLASK_APP
 
 USER $GTT_USER
 

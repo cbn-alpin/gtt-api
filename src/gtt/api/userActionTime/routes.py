@@ -2,8 +2,8 @@ from datetime import datetime
 
 from flask import Blueprint, abort, current_app, jsonify, request
 
-from src.api.auth.services import user_required
-from src.api.userActionTime.services import (
+from gtt.api.auth.services import user_required
+from gtt.api.userActionTime.services import (
     create_or_update_user_action_time,
     get_user_project_actions_time_entries,
     get_user_projects_time_by_id,

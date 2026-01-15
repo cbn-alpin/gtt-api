@@ -1,19 +1,18 @@
 import marshmallow
 from flask import Flask, jsonify
 from flask_cors import CORS
-
-from src.api.action.routes import resources as actions_ressources
-from src.api.auth.routes import resources as auth_ressources
-from src.api.exception import DBInsertException, NotFoundError
-from src.api.expense.routes import resources as expenses_ressources
-from src.api.project.routes import resources as projects_ressources
-from src.api.travel.routes import resources as travels_ressources
-from src.api.user.routes import resources as users_ressources
-from src.api.userAction.routes import resources as users_action_ressources
-from src.api.userActionTime.routes import resources as users_action_time_ressources
-from src.config import get_config
-from src.database import db
-from src.extensions import jwt, migrate
+from gtt.api.action.routes import resources as actions_ressources
+from gtt.api.auth.routes import resources as auth_ressources
+from gtt.api.exception import DBInsertException, NotFoundError
+from gtt.api.expense.routes import resources as expenses_ressources
+from gtt.api.project.routes import resources as projects_ressources
+from gtt.api.travel.routes import resources as travels_ressources
+from gtt.api.user.routes import resources as users_ressources
+from gtt.api.userAction.routes import resources as users_action_ressources
+from gtt.api.userActionTime.routes import resources as users_action_time_ressources
+from gtt.config import get_config
+from gtt.database import db
+from gtt.extensions import jwt, migrate
 
 
 def create_api(config_overrides: dict = None):
@@ -54,6 +53,7 @@ def create_api(config_overrides: dict = None):
 
 # Creating the Flask application
 api = create_api()
+
 
 @api.route("/health", methods=["GET"])
 def health():

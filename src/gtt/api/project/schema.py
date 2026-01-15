@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from src.api.action.schema import ActionSchema
+from gtt.api.action.schema import ActionSchema
 
 
 class ProjectSchema(Schema):

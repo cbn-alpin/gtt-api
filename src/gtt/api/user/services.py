@@ -3,12 +3,12 @@ import hashlib
 import sqlalchemy
 from flask import abort, current_app
 
-from src.api.action.schema import ActionSchema
-from src.api.exception import DBInsertException
-from src.api.project.schema import ProjectSchema
-from src.api.user.schema import UserInputSchema, UserSchema
-from src.database import db
-from src.models import Action, Project, User, UserAction
+from gtt.api.action.schema import ActionSchema
+from gtt.api.exception import DBInsertException
+from gtt.api.project.schema import ProjectSchema
+from gtt.api.user.schema import UserInputSchema, UserSchema
+from gtt.database import db
+from gtt.models import Action, Project, User, UserAction
 
 
 def get_user_projects_by_id(user_id: int):

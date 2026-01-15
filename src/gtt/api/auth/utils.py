@@ -2,7 +2,7 @@ from datetime import datetime
 
 import jwt
 
-from src.config import get_config
+from gtt.config import get_config
 
 config = get_config()
 JWT_SECRET = config.JWT_SECRET

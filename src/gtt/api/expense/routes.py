@@ -1,8 +1,8 @@
 from flask import Blueprint, abort, current_app, jsonify, request
 
-from src.api.auth.services import user_required
-from src.api.expense.services import create_expense, delete, get_expense_by_id, update
-from src.api.travel.services import get_travel_by_id
+from gtt.api.auth.services import user_required
+from gtt.api.expense.services import create_expense, delete, get_expense_by_id, update
+from gtt.api.travel.services import get_travel_by_id
 
 resources = Blueprint("expenses", __name__)
 

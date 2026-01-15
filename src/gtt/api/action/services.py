@@ -2,10 +2,10 @@ import sqlalchemy
 from flask import abort, current_app
 from marshmallow import EXCLUDE
 
-from src.api.action.schema import ActionSchema
-from src.api.exception import DBInsertException
-from src.database import db
-from src.models import Action
+from gtt.api.action.schema import ActionSchema
+from gtt.api.exception import DBInsertException
+from gtt.database import db
+from gtt.models import Action
 
 
 def create_action(action: dict) -> int:

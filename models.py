@@ -1,3 +1,4 @@
+from gtt.database import db
 from sqlalchemy import (
     Boolean,
     Column,
@@ -11,8 +12,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
-
-from src.database import db
 
 Base = db.Model
 

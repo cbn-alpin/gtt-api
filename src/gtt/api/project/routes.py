@@ -4,17 +4,17 @@ import requests
 from flask import Blueprint, abort, current_app, jsonify, request
 from flask_jwt_extended import jwt_required
 
-from src.api.auth.services import admin_required
-from src.api.exception import DeleteError, UpdateError
-from src.api.project.services import (
+from gtt.api.auth.services import admin_required
+from gtt.api.exception import DeleteError, UpdateError
+from gtt.api.project.services import (
     create_project,
     delete,
     get_all_projects,
     get_archived_project,
     update,
 )
-from src.api.project.services import get_project_by_id as project_by_id
-from src.config import get_config
+from gtt.api.project.services import get_project_by_id as project_by_id
+from gtt.config import get_config
 
 resources = Blueprint("projects", __name__)
 
@@ -158,6 +158,6 @@ def get_gefiproj_project():
         f"{url}api/auth/login",
         json={"login": config.GEFIPROJ_LOGIN, "password": config.GEFIPROJ_PASSWORD},
     )
-    headers = {"Authorization": f'Bearer {auth.json()["access_token"]}'}
+    headers = {"Authorization": f"Bearer {auth.json()['access_token']}"}
     response = requests.get(url=f"{url}api/projects", headers=headers)
     return jsonify(response.json()), 200
