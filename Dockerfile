@@ -104,15 +104,14 @@ COPY --from=builder /usr/src/app/VERSION.txt .
 # which is set to APP_HOME (/home/app/web) !
 COPY pyproject.toml .
 COPY migrations/ migrations/
+COPY src/ src/
 
 # Install the application and its dependencies from the wheel
 RUN pip install --upgrade pip \
-    && pip install --no-cache-dir --user gunicorn==21.2.0 \
+    && pip install --no-cache-dir gunicorn==21.2.0 \
     && pip install --no-cache-dir /wheels/* \
     && rm -rf /wheels \
     && chown -R app:app $GTT_APP_HOME
-
-ENV PATH="$PATH:${GTT_USER_HOME}/.local/bin"
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # The shell form is used here for consistency and to allow expansion of APP_PORT.
