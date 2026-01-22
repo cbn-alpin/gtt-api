@@ -104,5 +104,5 @@ jobs:
             {
               "event": "deployment",
               "repository": "${{ env.REPO_NAME }}",
-              "image": "cbna/${{ env.REPO_NAME }}:${{ github.ref_name }}"
+              "image": "cbna/${{ env.REPO_NAME }}:latest"
             }
