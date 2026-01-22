@@ -46,7 +46,7 @@ ENV GTT_APP_PORT=5001
 ENV FLASK_APP=gtt.main:api
 
 # Create new user "app" with group and home directory
-RUN useradd --create-home --shell /bin/bash app
+RUN useradd --create-home --shell /bin/bash $GTT_USER
 
 # Uncomment alias from user "app" .bashrc file
 RUN sed -i -r 's/^#(alias|export|eval)/\1/' "$GTT_USER_HOME/.bashrc"
