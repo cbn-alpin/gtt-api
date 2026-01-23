@@ -23,7 +23,7 @@ def upgrade() -> None:
         "project",
         sa.Column("id_project", sa.Integer(), nullable=False),
         sa.Column("code", sa.String(length=50), nullable=False),
-        sa.Column("name", sa.String(length=50), nullable=False),
+        sa.Column("name", sa.String(length=150), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("start_date", sa.Date(), nullable=True),
         sa.Column("end_date", sa.Date(), nullable=True),
@@ -33,7 +33,7 @@ def upgrade() -> None:
     op.create_table(
         "user",
         sa.Column("id_user", sa.Integer(), nullable=False),
-        sa.Column("email", sa.String(length=50), nullable=False),
+        sa.Column("email", sa.String(length=150), nullable=False),
         sa.Column("first_name", sa.String(length=50), nullable=False),
         sa.Column("last_name", sa.String(length=50), nullable=False),
         sa.Column("is_admin", sa.Boolean(), nullable=True),
@@ -44,8 +44,8 @@ def upgrade() -> None:
     op.create_table(
         "action",
         sa.Column("id_action", sa.Integer(), nullable=False),
-        sa.Column("name", sa.String(length=50), nullable=False),
-        sa.Column("description", sa.String(length=50), nullable=True),
+        sa.Column("name", sa.String(length=150), nullable=False),
+        sa.Column("description", sa.Text(), nullable=True),
         sa.Column("id_project", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["id_project"],

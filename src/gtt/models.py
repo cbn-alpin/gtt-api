@@ -40,7 +40,7 @@ class Project(Base):
 
     id_project = Column(Integer, primary_key=True)
     code = Column(String(50), nullable=False)
-    name = Column(String(50), nullable=False)
+    name = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
@@ -75,7 +75,7 @@ class Action(Base):
 
     id_action = Column(Integer, primary_key=True)
     numero_action = Column(String, nullable=False)
-    name = Column(String(50), nullable=False)
+    name = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
     id_project = Column(
         Integer, ForeignKey("project.id_project", ondelete="CASCADE"), nullable=False
