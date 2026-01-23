@@ -1,0 +1,9 @@
+code_project	numero	name	description
+A	a.1	Congés payés	Congés payés.
+A	a.2	RTT	Congés de type RTT (Réduction du temps de travail).
+A	a.3	Récupérations	Heure de récupération.
+A	a.4	Congés maladie	Congés maladie.
+A	a.5	Congés exceptionnel	Congés exceptionnel.
+A	a.6	Congés garde enfant malade	Congés garde enfant malade.
+A	a.7	Formations	Formations.
+A	a.8	Gestion interne	Temps de fonctionnement lié à la structure : saisie du temps, réunion d'équipe, organisation...
