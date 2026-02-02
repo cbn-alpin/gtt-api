@@ -9,6 +9,7 @@ import os
 import csv
 from datetime import datetime
 from typing import Sequence, Union
+from datetime import timedelta
 
 import sqlalchemy as sa
 from alembic import op
@@ -43,6 +44,7 @@ def upgrade() -> None:
 
     csv_path = "migrations/data/default_projects.csv"
     projects_to_insert = []
+    default_end_date = (datetime.today() + timedelta(days=(365*100))).strftime('%Y-%m-%d')
 
     if os.path.exists(csv_path):
         with open(csv_path, mode="r", encoding="utf-8") as csvfile:
@@ -56,7 +58,7 @@ def upgrade() -> None:
                         "name": row["name"],
                         "description": row.get("description", None),
                         "start_date": row["start_date"],
-                        "end_date": row.get("end_date", None),
+                        "end_date": row.get("end_date", default_end_date),
                         "is_archived": row.get("is_archived", "false").lower() in ("true", "1", "yes"),
                     }
                 )
@@ -70,7 +72,7 @@ def upgrade() -> None:
                 "name": "Default Project",
                 "description": "Default project for GTT.",
                 "start_date": datetime.today().strftime('%Y-%m-%d'),
-                "end_date": None,
+                "end_date": default_end_date,
                 "is_archived": False,
             }
         )
