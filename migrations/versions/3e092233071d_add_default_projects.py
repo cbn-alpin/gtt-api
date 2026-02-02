@@ -51,6 +51,7 @@ def upgrade() -> None:
             reader = csv.DictReader(csvfile, delimiter="\t")
             id_project = 0
             for row in reader:
+                row["end_date"] = None if row.get("end_date", "").strip() == "" else row["end_date"]
                 projects_to_insert.append(
                     {
                         "id_project": id_project,
