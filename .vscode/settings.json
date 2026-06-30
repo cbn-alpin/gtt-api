@@ -7,5 +7,24 @@
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true
   },
-  "ruff.configurationPreference": "filesystemFirst"
+  "ruff.configurationPreference": "filesystemFirst",
+  "files.exclude": {
+    "**/.pytest_cache": true,
+    "**/__pycache__": true,
+    "**/*.egg-info": true,
+    "**/build": true,
+    "**/.ruff_cache": true,
+    "**/.coverage": true,
+    "**/htmlcov": true
+  },
+  "search.exclude": {
+    "**/.pytest_cache": true,
+    "**/__pycache__": true,
+    "**/*.egg-info": true,
+    "**/build": true,
+    "**/.ruff_cache": true,
+    "**/.coverage": true,
+    "**/htmlcov": true,
+    "**/.venv": true
+  }
 }
