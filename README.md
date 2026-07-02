@@ -1,8 +1,11 @@
 # gtt-api
 
 Backend for the *Gestion du Temps de Travail* (GTT) Tool.
+For production, we will use Gunicorn and Nginx within a Docker container.
 
-## Installation and Usage
+## Development
+
+### Installation and Usage
 
 ⚠️ Warning: This project only works with Python v3.x.
 
@@ -20,29 +23,7 @@ Navigate to the cloned project folder:
 cd gtt-api/
 ```
 
-## Dependencies
-
-Install Python dependencies defined in *pyproject.toml*:
-
-Install _uv_. See: https://docs.astral.sh/uv/getting-started/installation/
-
-Synchronise the app (install the `.venv` and dependencies):
-```bash
-# Install applications dependencies
-uv sync
-# Install development dependencies
-uv sync --extra dev
-```
-
-**Note**: we don't use *requirements.txt* file in this project.
-
-Then, run command inside the `.venv` with:
-
-```bash
-uv run <command>
-```
-
-## Configuration file
+### Configuration file
 
 Create a *.env* configuration file and **adapt it to your configuration**:
 
@@ -52,7 +33,7 @@ cp .env.sample .env
 
 If you change the location of the *.env* file, you must specify the path to the new location using the `GTT_CONFIG_PATH` environment variable.
 
-## Database
+### Database
 
 We use Postgresql and you need to add a new user and crate a new database.
 Connect to Psql terminal with a superadmin user:
@@ -68,41 +49,7 @@ CREATE DATABASE <new-database-name> WITH TEMPLATE template0 OWNER <user-name>;
 GRANT ALL PRIVILEGES ON DATABASE <new-database-name> TO <user-name> ;
 ```
 
-The database content is installed by default when the Docker container is launch
-in production if it doesn't exist. The same applies to the migrations.
-
-In development, use the command: `flask db upgrade`
-
-Run Flask development server with :
-
-```bash
-uv run flask run
-```
-
-You will see:
-
-```
-INFO in __init__: No previous migrations found. Running all migrations...
-INFO in __init__: Database is up to date
-```
-
-If a manual update is required, use the following command:
-
-```bash
-uv run alembic upgrade head
-# If you had change the .env location used:
-# GTT_CONFIG_PATH=/new/location/.env alembic upgrade head
-```
-
-**Note**: we used *pyproject.toml* instead of *alembic.ini*. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no *alembic.ini* file.
-
-Alembic was originaly initialize with this command :
-
-```bash
-alembic init --template pyproject migrations
-```
-
-With the database created, you must add at least one admin user:
+With the database populated (see below), you can add at least one admin user by running this SQL command:
 
 ```sql
 -- Switch to the new database:
@@ -134,22 +81,27 @@ INSERT INTO user_action (id_user, id_action)
     );
 ```
 
-## Running Flask
 
-Launch the Flask framework in development mode:
+### Database migrations
 
-```bash
-uv run flask run
-```
-**Note**: For production, we will use Gunicorn and Nginx within a Docker container.
-
-## Running Tests
+Alembic was originaly initialize with this command :
 
 ```bash
-ur runn pytest
+uv run alembic init --template pyproject migrations
 ```
 
-## Generate a Database Revision with Alembic
+In development, use the command: ` uv run flask db upgrade`
+
+In development without Docker, a manual database update is required. Use the following command:
+
+```bash
+uv run alembic upgrade head
+# If you had change the .env location used:
+# GTT_CONFIG_PATH=/new/location/.env alembic upgrade head
+```
+
+
+### Generate a Database Revision with Alembic
 
 To generate a new Alembic revision with the message `<my-revision-message>` :
 
@@ -157,6 +109,49 @@ To generate a new Alembic revision with the message `<my-revision-message>` :
 # Create new Alembic revision:
 uv run alembic revision --autogenerate -m "<my-revision-message>"
 ```
+
+
+**Note**: we used *pyproject.toml* instead of *alembic.ini*. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no *alembic.ini* file.
+
+
+### Dependencies
+
+Install Python dependencies defined in *pyproject.toml*:
+
+Install _uv_. See: https://docs.astral.sh/uv/getting-started/installation/
+
+Synchronise the app (install the `.venv` and dependencies):
+```bash
+# Install applications dependencies
+uv sync
+# Install development dependencies
+uv sync --extra dev
+```
+
+**Note**: we don't use *requirements.txt* file in this project.
+
+Then, run command inside the `.venv` with:
+
+```bash
+uv run <command>
+```
+
+
+### Running Flask
+
+Launch the Flask framework in development mode:
+
+```bash
+uv run flask run
+```
+
+
+### Running Tests
+
+```bash
+ur runn pytest
+```
+
 
 ## Docker
 
@@ -186,6 +181,7 @@ Also, you can use:
 - `GTT_APP_PORT`: to change the default port `5001` of the API.
 
 #### Docker Compose
+
 To easily launch the application in a development environment, use Docker Compose. This will build the `development` image and run it with your local source code mounted for hot-reloading.
 
 1.  Make sure you have a `.env` file (you can copy `.env.sample`).
@@ -212,4 +208,16 @@ To locally run the production image in host network:
 
 ```bash
 docker run --rm -it -e GTT_APP_PORT=5000 -e FLASK_APP=gtt.main:api -e FLASK_ENV=production --volume .env:/home/app/web/.env --network host gtt-api:production
+```
+
+To generate data for this database, you can use the 3 `.sample.csv` files located in the `migrations/data/` directory. They will be automatically loaded when the database is created.
+
+The database content is installed by default when the Docker container is launch
+in production if it doesn't exist. The same applies to the migrations.
+
+You will see:
+
+```
+INFO in __init__: No previous migrations found. Running all migrations...
+INFO in __init__: Database is up to date
 ```
