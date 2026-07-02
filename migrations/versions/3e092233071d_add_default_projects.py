@@ -1,23 +1,22 @@
-"""add_default_projects
+"""Add default projects
 
 Revision ID: 3e092233071d
 Revises:  e1e4cccc9eb3
 Create Date: 2026-01-23 16:38:33.580308
 
 """
-import os
+
 import csv
-from datetime import datetime
+import os
+from datetime import datetime, timedelta
 from typing import Sequence, Union
-from datetime import timedelta
 
 import sqlalchemy as sa
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
-revision: str = '3e092233071d'
-down_revision: Union[str, None] = 'e1e4cccc9eb3'
+revision: str = "3e092233071d"
+down_revision: Union[str, None] = "2076792f348d"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -44,14 +43,16 @@ def upgrade() -> None:
 
     csv_path = "migrations/data/default_projects.csv"
     projects_to_insert = []
-    default_end_date = (datetime.today() + timedelta(days=(365*100))).strftime('%Y-%m-%d')
+    default_end_date = (datetime.today() + timedelta(days=(365 * 100))).strftime("%Y-%m-%d")
 
     if os.path.exists(csv_path):
         with open(csv_path, mode="r", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile, delimiter="\t")
             id_project = 0
             for row in reader:
-                row["end_date"] = default_end_date if row.get("end_date", "").strip() == "" else row["end_date"]
+                row["end_date"] = (
+                    default_end_date if row.get("end_date", "").strip() == "" else row["end_date"]
+                )
                 projects_to_insert.append(
                     {
                         "id_project": id_project,
@@ -60,7 +61,8 @@ def upgrade() -> None:
                         "description": row.get("description", None),
                         "start_date": row["start_date"],
                         "end_date": row.get("end_date", default_end_date),
-                        "is_archived": row.get("is_archived", "false").lower() in ("true", "1", "yes"),
+                        "is_archived": row.get("is_archived", "false").lower()
+                        in ("true", "1", "yes"),
                     }
                 )
                 id_project += 1
@@ -72,7 +74,7 @@ def upgrade() -> None:
                 "code": "DEFAULT",
                 "name": "Default Project",
                 "description": "Default project for GTT.",
-                "start_date": datetime.today().strftime('%Y-%m-%d'),
+                "start_date": datetime.today().strftime("%Y-%m-%d"),
                 "end_date": default_end_date,
                 "is_archived": False,
             }

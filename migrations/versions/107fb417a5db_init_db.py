@@ -1,4 +1,4 @@
-"""init db
+"""Initialize database
 
 Revision ID: 107fb417a5db
 Revises:

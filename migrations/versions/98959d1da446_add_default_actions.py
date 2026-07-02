@@ -1,21 +1,21 @@
-"""add_default_actions
+"""Add default actions
 
 Revision ID: 98959d1da446
 Revises: 3e092233071d
 Create Date: 2026-01-23 17:01:01.196694
 
 """
-from typing import Sequence, Union
-import os
+
 import csv
+import os
+from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '98959d1da446'
-down_revision: Union[str, None] = '3e092233071d'
+revision: str = "98959d1da446"
+down_revision: Union[str, None] = "3e092233071d"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -31,7 +31,7 @@ def upgrade() -> None:
     # Define table structure for bulk insert
     action_table = sa.table(
         "action",
-        sa.column("numero_action", sa.String), # Corrected column name
+        sa.column("numero_action", sa.String),  # Corrected column name
         sa.column("name", sa.String),
         sa.column("description", sa.String),
         sa.column("id_project", sa.Integer),

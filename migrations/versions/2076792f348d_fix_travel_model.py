@@ -1,4 +1,4 @@
-"""fix_travel_model
+"""Fix travel model
 
 Revision ID: 2076792f348d
 Revises: ec06874d5c81
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "2076792f348d"
-down_revision: Union[str, None] = "ec06874d5c81"
+down_revision: Union[str, None] = "17b9e53d372c"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -21,7 +21,12 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.drop_constraint("action_id_project_fkey", "action", type_="foreignkey")
     op.create_foreign_key(
-        None, "action", "project", ["id_project"], ["id_project"], ondelete="CASCADE"
+        "action_id_project_fkey",
+        "action",
+        "project",
+        ["id_project"],
+        ["id_project"],
+        ondelete="CASCADE",
     )
     op.add_column(
         "travel",
@@ -43,20 +48,61 @@ def upgrade() -> None:
     op.alter_column("travel", "start_km", existing_type=sa.SMALLINT(), nullable=True)
     op.alter_column("travel", "end_km", existing_type=sa.SMALLINT(), nullable=True)
     op.drop_constraint("user_action_id_user_fkey", "user_action", type_="foreignkey")
-    op.create_foreign_key(None, "user_action", "user", ["id_user"], ["id_user"], ondelete="CASCADE")
+    op.create_foreign_key(
+        "user_action_id_user_fkey",
+        "user_action",
+        "user",
+        ["id_user"],
+        ["id_user"],
+        ondelete="CASCADE",
+    )
     op.drop_constraint("user_action_time_id_user_fkey", "user_action_time", type_="foreignkey")
     op.drop_constraint("user_action_time_id_action_fkey", "user_action_time", type_="foreignkey")
     op.create_foreign_key(
-        None, "user_action_time", "action", ["id_action"], ["id_action"], ondelete="CASCADE"
+        "user_action_time_id_action_fkey",
+        "user_action_time",
+        "action",
+        ["id_action"],
+        ["id_action"],
+        ondelete="CASCADE",
     )
     op.create_foreign_key(
-        None, "user_action_time", "user", ["id_user"], ["id_user"], ondelete="CASCADE"
+        "user_action_time_id_user_fkey",
+        "user_action_time",
+        "user",
+        ["id_user"],
+        ["id_user"],
+        ondelete="CASCADE",
+    )
+
+    op.add_column(
+        "travel",
+        sa.Column(
+            "night_municipality", sa.VARCHAR(length=50), nullable=True, server_default="sisteron"
+        ),
+    )
+
+    op.drop_constraint("expense_id_travel_fkey", "expense", type_="foreignkey")
+    op.create_foreign_key(
+        "expense_id_travel_fkey",
+        "expense",
+        "travel",
+        ["id_travel"],
+        ["id_travel"],
+        ondelete="CASCADE",
     )
 
 
 def downgrade() -> None:
-    op.drop_constraint(None, "user_action_time", type_="foreignkey")
-    op.drop_constraint(None, "user_action_time", type_="foreignkey")
+    op.drop_constraint("expense_id_travel_fkey", "expense", type_="foreignkey")
+    op.create_foreign_key(
+        "expense_id_travel_fkey", "expense", "travel", ["id_travel"], ["id_travel"]
+    )
+
+    op.drop_column("travel", "night_municipality")
+
+    op.drop_constraint("user_action_time_id_action_fkey", "user_action_time", type_="foreignkey")
+    op.drop_constraint("user_action_time_id_user_fkey", "user_action_time", type_="foreignkey")
     op.create_foreign_key(
         "user_action_time_id_action_fkey",
         "user_action_time",
@@ -67,7 +113,7 @@ def downgrade() -> None:
     op.create_foreign_key(
         "user_action_time_id_user_fkey", "user_action_time", "user", ["id_user"], ["id_user"]
     )
-    op.drop_constraint(None, "user_action", type_="foreignkey")
+    op.drop_constraint("user_action_id_user_fkey", "user_action", type_="foreignkey")
     op.create_foreign_key(
         "user_action_id_user_fkey", "user_action", "user", ["id_user"], ["id_user"]
     )
@@ -89,7 +135,7 @@ def downgrade() -> None:
         existing_nullable=False,
     )
     op.drop_column("travel", "end_municipality")
-    op.drop_constraint(None, "action", type_="foreignkey")
+    op.drop_constraint("action_id_project_fkey", "action", type_="foreignkey")
     op.create_foreign_key(
         "action_id_project_fkey", "action", "project", ["id_project"], ["id_project"]
     )

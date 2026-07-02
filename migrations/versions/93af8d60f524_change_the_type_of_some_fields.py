@@ -1,4 +1,4 @@
-"""change the type of some fields
+"""Change the type of some fields
 
 Revision ID: 93af8d60f524
 Revises: 107fb417a5db
