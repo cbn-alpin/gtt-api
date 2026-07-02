@@ -1,0 +1,243 @@
+"""
+CLI commands for database management.
+
+The functions of this modules (notably `box_drowing`, `autoupgrade` and `status`  )
+are directly inspired and adapted from the PnX-SI/Utils-Flask-SQLAlchemy project :
+Source : https://github.com/PnX-SI/Utils-Flask-SQLAlchemy/blob/06d6ccf2cc8851331b3aa6223ef225cc5354f153/src/utils_flask_sqla/commands.py
+"""
+
+from collections import defaultdict, deque
+from io import StringIO
+from itertools import chain
+
+import click
+import flask_migrate
+from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
+from flask import current_app
+from flask.cli import with_appcontext
+from flask_migrate.cli import db as db_cli
+
+
+def box_drowing(up, down, left, right, bold=True):
+    if not up and not down and not left and not right:
+        return "─"
+    elif up and not down and not left and not right:
+        return "┸"
+    elif not up and down and not left and not right:
+        return "┰"
+    elif up and down and not left and not right:
+        return "┃"
+    elif up and not down and left and not right:
+        return "┛"
+    elif up and not down and not left and right:
+        return "┗" if bold else "└"
+    elif not up and not down and left and right:
+        return "━"
+    elif not up and down and left and not right:
+        return "┓"
+    elif not up and down and not left and right:
+        return "┏"
+    elif up and down and not left and right:
+        return "┣" if bold else "├"
+    elif up and down and left and not right:
+        return "┫"
+    elif up and not down and left and right:
+        return "┻"
+    elif not up and down and left and right:
+        return "┳"
+    elif up and down and left and right:
+        return "╋"
+    else:
+        raise Exception("Unexpected box drowing symbol")
+
+
+@db_cli.command()
+@click.option(
+    "-d",
+    "--directory",
+    default=None,
+    help=('Migration script directory (default is "migrations")'),
+)
+@click.option(
+    "--sql", is_flag=True, help=("Don't emit SQL to database - dump to standard output instead")
+)
+@click.option(
+    "--tag", default=None, help=('Arbitrary "tag" name - can be used by custom env.py scripts')
+)
+@click.option(
+    "-x", "--x-arg", multiple=True, help="Additional arguments consumed by custom env.py scripts"
+)
+@with_appcontext
+def autoupgrade(directory, sql, tag, x_arg):
+    """Upgrade all branches to head."""
+    flask_migrate.upgrade(directory, "heads", sql, tag, x_arg)
+
+
+@db_cli.command()
+@click.option(
+    "-d",
+    "--directory",
+    default=None,
+    help=('Migration script directory (default is "migrations")'),
+)
+@click.option(
+    "-x", "--x-arg", multiple=True, help="Additional arguments consumed by custom env.py scripts"
+)
+@click.option(
+    "--deps", "--dependencies", "show_dependencies", is_flag=True, help="Show dependencies"
+)
+@click.argument("branches", nargs=-1)
+@with_appcontext
+def status(directory, x_arg, show_dependencies, branches):
+    """Show all revisions sorted by branches."""
+    db = current_app.extensions["sqlalchemy"]
+    migrate = current_app.extensions["migrate"].migrate
+
+    config = migrate.get_config(directory, x_arg)
+    script = ScriptDirectory.from_config(config)
+    migration_context = MigrationContext.configure(db.session.connection())
+
+    current_heads = migration_context.get_current_heads()
+    applied_rev = set(script.iterate_revisions(current_heads, "base"))
+
+    def get_branch_label(rev):
+        return next(iter(rev.branch_labels or []), "default")
+
+    bases = [script.get_revision(base) for base in script.get_bases()]
+    bases = {get_branch_label(base): base for base in sorted(bases, key=get_branch_label)}
+
+    def print_revision(
+        prefix,
+        revision,
+        *,
+        file=None,
+        show_branch_label=False,
+        show_dependencies=False,
+        current_branch_label=None,
+    ):
+        branch_label = current_branch_label or get_branch_label(revision)
+        branch_base = bases.get(branch_label)
+        fg = (
+            ("white" if revision in applied_rev else "red")
+            if (branch_base in applied_rev)
+            else None
+        )
+        branch_display = f"({branch_label}) " if show_branch_label else ""
+        print(
+            click.style(f"{prefix}{branch_display}{revision.revision} {revision.doc}", fg=fg),
+            file=file,
+        )
+        if show_dependencies and revision.dependencies:
+            deps = (
+                (revision.dependencies,)
+                if isinstance(revision.dependencies, str)
+                else revision.dependencies
+            )
+            for i, dep in enumerate(deps):
+                dep = script.get_revision(dep)
+                symbol = box_drowing(
+                    up=True, down=i < len(deps) - 1, left=False, right=True, bold=False
+                )
+                print_revision(
+                    " " * len(prefix) + symbol + " ",
+                    dep,
+                    file=output,
+                    show_branch_label=True,
+                    show_dependencies=show_dependencies,
+                )
+
+    outdated = False
+    for branch_label, branch_base in bases.items():
+        output = StringIO()
+        if branches and branch_label not in branches:
+            continue
+        levels = defaultdict(set)
+        branch_outdated = False
+        seen = set()
+        todo = deque()
+        todo.append(branch_base)
+        while todo:
+            rev = todo.pop()
+
+            down_levels = levels[rev]
+            if rev.is_merge_point:
+                down_revisions = rev.down_revision
+            elif rev.down_revision:
+                down_revisions = [rev.down_revision]
+            else:
+                down_revisions = []
+            down_revisions = [script.get_revision(r) for r in down_revisions]
+
+            next_revisions = [script.get_revision(r) for r in rev.nextrev]
+
+            if rev.is_merge_point and (not seen.issuperset(down_revisions) or rev in todo):
+                continue
+            seen.add(rev)
+
+            next_levels = set()
+            for j, nextrev in enumerate(next_revisions):
+                if j == 0:
+                    next_level = min(down_levels) if down_levels else 0
+                else:
+                    next_level = max(chain(*[levels[rev] for rev in todo])) + 1
+                levels[nextrev].add(next_level)
+                next_levels.add(next_level)
+                todo.append(nextrev)
+
+            all_levels = list(chain(down_levels, next_levels))
+            min_level = min(all_levels, default=0)
+            max_level = max(all_levels, default=0)
+            symbol = ""
+            for i in range(max_level + 1):
+                if i < min_level:
+                    symbol += " "
+                else:
+                    symbol += box_drowing(
+                        up=i in down_levels,
+                        down=i in next_levels,
+                        left=i > min_level,
+                        right=i < max_level,
+                    )
+
+            check = "x" if rev in applied_rev else " "
+            if branch_base in applied_rev and rev not in applied_rev:
+                outdated = True
+                branch_outdated = True
+            print_revision(
+                f"  [{check}] {symbol} ",
+                rev,
+                file=output,
+                show_dependencies=show_dependencies,
+                current_branch_label=branch_label,
+            )
+
+        if branch_base in applied_rev:
+            fg = "white"
+            mark = " "
+            mark += click.style("×", fg="red") if branch_outdated else click.style("✓", fg="green")
+        else:
+            fg = None
+            mark = ""
+        click.echo(
+            click.style(f"[{branch_label}", bold=True, fg=fg)
+            + mark
+            + click.style("]", bold=True, fg=fg)
+        )
+        click.echo(output.getvalue(), nl=False)
+
+    if outdated:
+        click.secho(
+            "Some branches are outdated, you can upgrade with 'autoupgrade' sub-command.", fg="red"
+        )
+
+
+def register_commands(app):
+    # Get the existing 'db' group from Flask-Migrate
+    if "db" in app.cli.commands:
+        app.cli.commands["db"].add_command(status, name="status")
+        app.cli.commands["db"].add_command(autoupgrade, name="autoupgrade")
+    else:
+        # Fallback if the 'db' group doesn't exist yet
+        app.cli.add_command(status, name="db_status")
+        app.cli.add_command(autoupgrade, name="db_autoupgrade")

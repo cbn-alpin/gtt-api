@@ -11,6 +11,7 @@ from gtt.api.travel.routes import resources as travels_ressources
 from gtt.api.user.routes import resources as users_ressources
 from gtt.api.userAction.routes import resources as users_action_ressources
 from gtt.api.userActionTime.routes import resources as users_action_time_ressources
+from gtt.commands import register_commands
 from gtt.config import get_config
 from gtt.database import db
 from gtt.extensions import jwt, migrate
@@ -37,6 +38,8 @@ def create_api(config_overrides: dict = None):
     jwt.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
+
+    register_commands(app)
 
     # Enable CORS globally for all routes
     CORS(app)
