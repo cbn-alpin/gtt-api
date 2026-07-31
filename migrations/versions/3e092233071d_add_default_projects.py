@@ -32,7 +32,7 @@ def upgrade() -> None:
     # Define table structure for bulk insert
     project_table = sa.table(
         "project",
-        sa.column("id_project", sa.String),
+        sa.column("id_project", sa.Integer),
         sa.column("code", sa.String),
         sa.column("name", sa.String),
         sa.column("description", sa.String),
@@ -82,6 +82,18 @@ def upgrade() -> None:
 
     if projects_to_insert:
         op.bulk_insert(project_table, projects_to_insert)
+
+        # Update PostgreSQL sequence because bulk_insert does not increment it
+        bind = op.get_bind()
+        if bind.engine.name == "postgresql":
+            op.execute(
+                "SELECT setval("
+                "    pg_get_serial_sequence('project', 'id_project'), "
+                "    coalesce(max(id_project), 1), "
+                "    max(id_project) IS NOT null "
+                ") "
+                "FROM project"
+            )
 
 
 def downgrade():
