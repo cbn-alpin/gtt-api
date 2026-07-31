@@ -15,6 +15,7 @@ class Config:
     FLASK_APP: str
     FLASK_DEBUG: bool
     FLASK_ENV: str
+    LOG_LEVEL: str
     GS_AUTH_URI: str
     GS_CLIENT_ID: str
     GS_PRIVATE_KEY: str
@@ -67,8 +68,7 @@ class ConfigLoader:
             # If the field has a default value, only load it if it is present.
             # Otherwise, the field is mandatory.
             has_default = (
-                field.default != dataclasses.MISSING
-                or field.default_factory != dataclasses.MISSING
+                field.default != dataclasses.MISSING or field.default_factory != dataclasses.MISSING
             )
 
             if field.name in data:
@@ -92,8 +92,7 @@ class ConfigLoader:
         values = {}
         for field in dataclasses.fields(Config):
             has_default = (
-                field.default != dataclasses.MISSING
-                or field.default_factory != dataclasses.MISSING
+                field.default != dataclasses.MISSING or field.default_factory != dataclasses.MISSING
             )
             env_var_name = field.name.upper()
             if env_var_name in os.environ:

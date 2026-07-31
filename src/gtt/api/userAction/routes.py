@@ -10,9 +10,9 @@ resources = Blueprint("user_action", __name__)
 @resources.route("/user/<int:user_id>/action/<int:action_id>", methods=["POST"])
 @user_required
 def post_user_action(user_id: int, action_id: int):
-    if type(user_id) != int:
+    if type(user_id) is not int:
         abort(400, description="User id must be an int")
-    if type(action_id) != int:
+    if type(action_id) is not int:
         abort(400, description="Action id must be an int")
 
     current_app.logger.debug("In POST /api/user/action")

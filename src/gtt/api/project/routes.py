@@ -34,7 +34,8 @@ def post_project():
                 data.get("end_date"), "%d/%m/%Y"
             ):
                 abort(400, description="Start date after end date")
-        except ValueError:
+        except ValueError as error:
+            current_app.logger.error(error)
             abort(400, description="Invalid date format")
 
     project_id = create_project(data)
@@ -54,8 +55,8 @@ def get_projects():
         current_app.logger.error(error)
         response = "Request error", 400
         return response
-    except Exception as e:
-        current_app.logger.error(e)
+    except Exception as error:
+        current_app.logger.error(error)
         response = "Une erreur est survenue lors de la récupération des données projets", 400
         return response
 
@@ -71,8 +72,8 @@ def get_archived_projects():
     except ValueError as error:
         current_app.logger.error(error)
         response = jsonify(error.args[0]), error.args[1]
-    except Exception as e:
-        current_app.logger.error(e)
+    except Exception as error:
+        current_app.logger.error(error)
         response = (
             jsonify(
                 {"message": "Une erreur est survenue lors de la récupération des données projets"}
@@ -95,8 +96,8 @@ def get_project_by_id(project_id: int):
     except ValueError as error:
         current_app.logger.error(error)
         response = jsonify(error.args[0]), error.args[1]
-    except Exception as e:
-        current_app.logger.error(e)
+    except Exception as error:
+        current_app.logger.error(error)
         response = (
             jsonify(
                 {"message": "Une erreur est survenue lors de la récupération des données projets"}
@@ -121,8 +122,10 @@ def update_project(project_id: int):
     try:
         response = update(posted_data, project_id)
     except UpdateError as error:
+        current_app.logger.error(error)
         return error.message, error.status_code
     except Exception as error:
+        current_app.logger.error(error)
         return "Error during the modification", 400
     return jsonify(response), 200
 
@@ -143,8 +146,8 @@ def delete_project(project_id: int):
             jsonify({"message": "Une erreur est survenue lors de la suppression du projet"}),
             error.args[1],
         )
-    except Exception as e:
-        current_app.logger.error(e)
+    except Exception as error:
+        current_app.logger.error(error)
         return jsonify({"message": "Une erreur est survenue lors de la suppression du projet"}), 500
 
 

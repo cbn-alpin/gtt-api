@@ -1,3 +1,5 @@
+import logging
+
 import marshmallow
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -15,6 +17,8 @@ from gtt.commands import register_commands
 from gtt.config import get_config
 from gtt.database import db
 from gtt.extensions import jwt, migrate
+
+logging.basicConfig(level=logging.getLevelName(get_config().LOG_LEVEL))
 
 
 def create_api(config_overrides: dict = None):
@@ -57,6 +61,7 @@ def create_api(config_overrides: dict = None):
 
 # Creating the Flask application
 api = create_api()
+api.logger.info(f"Basic logger config set level to {get_config().LOG_LEVEL}")
 
 
 @api.route("/health", methods=["GET"])

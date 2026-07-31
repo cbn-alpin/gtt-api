@@ -8,10 +8,15 @@ from gtt.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchem
 from gtt.database import db
 from gtt.models import Action, Project, User, UserAction, UserActionTime
 
+MIN_HOURS_BY_DAY = 0
+MAX_HOURS_BY_DAY = 24
+
 
 def create_or_update_user_action_time(date: str, duration: float, id_user: int, id_action: int):
-    if duration < 0 or duration > 24:
-        abort(400, description="Duration must be between 0 and 24.")
+    if duration < MIN_HOURS_BY_DAY or duration > MAX_HOURS_BY_DAY:
+        abort(
+            400, description=f"Duration must be between {MIN_HOURS_BY_DAY} and {MAX_HOURS_BY_DAY}."
+        )
     existing_entry = (
         db.session.query(UserActionTime)
         .filter_by(

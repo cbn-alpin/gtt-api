@@ -132,7 +132,7 @@ def delete(project_id: int):
                 {
                     "message": (
                         f"Le projet '{project_id}' ne peut pas être supprimé "
-                        "car des saisies du temps y sont associés"
+                        "car des saisies de temps y sont associés"
                     )
                 }
             )

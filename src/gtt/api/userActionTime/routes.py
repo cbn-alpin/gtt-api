@@ -23,20 +23,22 @@ def get_user_projects(user_id: int):
     try:
         datetime.strptime(date_start, "%Y-%m-%d")
         datetime.strptime(date_end, "%Y-%m-%d")
-    except ValueError:
+    except ValueError as error:
+        current_app.logger.error(error)
         abort(400, description="Invalid date format. Please use YYYY-MM-DD.")
 
     try:
         response = get_user_projects_time_by_id(
             user_id=user_id, date_start=date_start, date_end=date_end
         )
-        return jsonify(response), 200
+        response_json = jsonify(response)
+        return response_json, 200
     except ValueError as error:
         current_app.logger.error(error)
         raise error
-    except Exception as e:
-        current_app.logger.error(e)
-        raise e
+    except Exception as error:
+        current_app.logger.error(error)
+        raise error
 
 
 @resources.route("/user/<int:user_id>/projects/times", methods=["POST"])
@@ -61,6 +63,6 @@ def get_project_actions_time_entries(project_id):
     except ValueError as error:
         current_app.logger.error(error)
         raise error
-    except Exception as e:
-        current_app.logger.error(e)
-        raise e
+    except Exception as error:
+        current_app.logger.error(error)
+        raise error
