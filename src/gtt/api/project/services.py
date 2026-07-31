@@ -19,9 +19,9 @@ def create_project(data: dict) -> int:
             description=project.get("description"),
             start_date=project.get("start_date"),
             end_date=project.get("end_date"),
+            hours_limit=project.get("hours_limit"),
             is_archived=project.get("is_archived", False),
         )
-
         db.session.add(project)
         db.session.commit()
         return project.id_project

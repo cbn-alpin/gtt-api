@@ -44,6 +44,7 @@ class Project(Base):
     description = Column(Text, nullable=True)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
+    hours_limit = Column(Numeric, nullable=True)
     is_archived = Column(Boolean, nullable=False)
 
     actions = relationship(
@@ -58,6 +59,7 @@ class Project(Base):
         id_project="",
         description=None,
         end_date=None,
+        hours_limit=None,
         is_archived=False,
     ):
         if id_project != "":
@@ -67,6 +69,7 @@ class Project(Base):
         self.description = description
         self.start_date = start_date
         self.end_date = end_date
+        self.hours_limit = hours_limit
         self.is_archived = is_archived
 
 

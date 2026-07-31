@@ -27,5 +27,6 @@ class ProjectTimeSchema(Schema):
     description = fields.String()
     start_date = fields.Date(required=False)
     end_date = fields.Date(required=False)
+    hours_limit = fields.Float(required=False)
     is_archived = fields.Boolean()
     list_action = fields.Nested(ActionWithTimeSchema)
