@@ -27,6 +27,7 @@ class Config:
     GEFIPROJ_PASSWORD: str
     SQLALCHEMY_ENGINE_OPTIONS: dict = dataclasses.field(default_factory=lambda: {})
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
+    SQLALCHEMY_ECHO: bool = False
     JWT_BLACKLIST_ENABLED: bool = True
     JWT_BLACKLIST_TOKEN_CHECKS: list = dataclasses.field(default_factory=lambda: ["access"])
 
