@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from flask import abort
-from sqlalchemy import and_, func, literal_column, or_
+from sqlalchemy import select, and_, func, literal_column, or_
 
 from gtt.api.exception import NotFoundError
 from gtt.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchema
@@ -41,78 +41,66 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
 
 
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
-    date_series = db.session.query(
-        func.generate_series(
-            literal_column(f"'{date_start}'::timestamp"),
-            literal_column(f"'{date_end}'::timestamp"),
-            "1 day",
-        ).label("date")
-    ).subquery()
-
-    projects_actions_time_tuple = (
-        db.session.query(
+    projects_actions_time_query = (
+        select(
             Project,
             Action,
-            date_series.c.date,
-            func.coalesce(func.sum(UserActionTime.duration), 0).label("duration"),
+            UserActionTime.date,
+            UserAction.id_action.is_not(None).label("is_user_action"),
+            func.sum(UserActionTime.duration).label("duration"),
         )
-        .join(Action, Project.id_project == Action.id_project)
-        .join(UserAction, Action.id_action == UserAction.id_action)
-        .join(date_series, literal_column("1=1"))
+        .join(Action, Action.id_project == Project.id_project)
+        .outerjoin(UserAction, and_(UserAction.id_user == user_id, UserAction.id_action == Action.id_action))
         .outerjoin(
             UserActionTime,
             and_(
                 UserActionTime.id_action == Action.id_action,
-                func.date(UserActionTime.date) == func.date(date_series.c.date),
+                UserActionTime.id_user == user_id,
+                func.date(UserActionTime.date) >= func.date(date_start),
+                func.date(UserActionTime.date) <= func.date(date_end),
             ),
         )
+        .filter(or_(UserAction.id_action.is_not(None), UserActionTime.id_action.is_not(None)))
         .group_by(
-            Project.id_project, Project.name, Action.id_action, Action.name, date_series.c.date
+            Project.id_project, Project.name, Action.id_action, Action.name, UserActionTime.date, UserAction.id_action
         )
-        .order_by(Project.id_project, Action.id_action, date_series.c.date)
-        .filter(
-            UserAction.id_user == user_id,
-            or_(UserActionTime.id_user == user_id, UserActionTime.id_user == None),
-            func.date(date_series.c.date) >= func.date(date_start),
-            func.date(date_series.c.date) <= func.date(date_end),
-        )
-        .all()
+        .order_by(Project.id_project, Action.id_action, UserActionTime.date)
     )
-
-    if not projects_actions_time_tuple:
+    projects_actions_time_result = db.session.execute(projects_actions_time_query).all()
+    if not projects_actions_time_result:
         raise NotFoundError("No projects found for the given user and date range")
 
-    total_duration_per_action = (
-        db.session.query(
-            Action.id_action,
-            func.coalesce(func.sum(UserActionTime.duration), 0).label("total_duration"),
+
+    total_duration_query = (
+        select(
+            Action.id_action.label("id"),
+            func.coalesce(func.sum(UserActionTime.duration), 0).label("total"),
         )
         .join(UserAction, Action.id_action == UserAction.id_action)
         .outerjoin(
             UserActionTime,
             and_(
                 UserActionTime.id_action == Action.id_action,
-                or_(UserActionTime.id_user == user_id, UserActionTime.id_user == None),
+                UserActionTime.id_user == user_id,
                 func.date(UserActionTime.date) >= func.date(date_start),
                 func.date(UserActionTime.date) <= func.date(date_end),
             ),
         )
         .filter(UserAction.id_user == user_id)
         .group_by(Action.id_action)
-        .all()
     )
-
+    total_duration_per_action = db.session.execute(total_duration_query).mappings().all()
     total_duration_map = {
-        action_id: total_duration for action_id, total_duration in total_duration_per_action
+        action["id"]: action["total"] for action in total_duration_per_action
     }
 
     list_projects = []
-    for project_action_time in projects_actions_time_tuple:
-        project_object, action_object, action_time_date, action_time_duration = project_action_time
+    for project_action_time in projects_actions_time_result:
+        project_object, action_object, action_time_date, is_user_action, action_time_duration = project_action_time
         project = ProjectTimeSchema().dump(project_object)
         action = ActionWithTimeSchema().dump(action_object)
+        action["is_selected"] = bool(is_user_action)
         action["total_duration"] = total_duration_map.get(action["id_action"], 0)
-
         existing_project = next(
             (p for p in list_projects if p["id_project"] == project["id_project"]), None
         )
@@ -131,9 +119,12 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
                 )
             else:
                 action["list_time"] = [{"date": action_time_date, "duration": action_time_duration}]
+                if bool(is_user_action):
+                    existing_project["is_selected"] = True
                 existing_project["list_action"].append(action)
         else:
             action["list_time"] = [{"date": action_time_date, "duration": action_time_duration}]
+            project["is_selected"] = bool(is_user_action)
             project["list_action"] = [action]
             list_projects.append(project)
 
