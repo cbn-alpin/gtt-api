@@ -95,5 +95,6 @@ def downgrade():
     """
     Remove all users from the user table.
     """
+    op.execute('DELETE FROM "travel" WHERE id_user IN (SELECT id_user FROM user)')
     op.execute('DELETE FROM "user_action"')
     op.execute('DELETE FROM "user"')
