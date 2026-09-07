@@ -116,6 +116,28 @@ uv run alembic revision --autogenerate -m "<my-revision-message>"
 
 **Note**: we used _pyproject.toml_ instead of _alembic.ini_. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no _alembic.ini_ file.
 
+### Manage database revisions
+
+You can show the actual database revision status with : `uv run flask db status`
+
+To upgrade the database to the latest revision:
+
+```bash
+uv run flask db upgrade
+```
+
+To downgrade the database to a specific revision:
+
+```bash
+uv run flask db downgrade <revision>
+```
+
+To rollback the database to the base (drop all tables):
+
+```bash
+uv run flask db downgrade base
+```
+
 ### Dependencies
 
 Install Python dependencies defined in _pyproject.toml_:
