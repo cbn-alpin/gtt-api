@@ -1,0 +1,111 @@
+Table alembic_version [headercolor: #175e7a] {
+	version_num varchar(32) [ pk, not null ]
+}
+
+Table project [headercolor: #175e7a] {
+	id_project serial [ pk, not null ]
+	code varchar(50) [ not null ]
+	name varchar(150) [ not null ]
+	description text [ not null ]
+	start_date date [ not null ]
+	end_date date [ not null ]
+	is_archived blob [ not null ]
+	hours_limit numeric [ not null ]
+}
+
+Table user [headercolor: #175e7a] {
+	id_user serial [ pk, not null ]
+	email varchar(150) [ not null ]
+	first_name varchar(50) [ not null ]
+	last_name varchar(50) [ not null ]
+	is_admin blob [ not null ]
+	password varchar(50) [ not null ]
+
+	indexes {
+		(email) [ name: 'user_email_key', unique ]
+	}
+}
+
+Table action [headercolor: #175e7a] {
+	id_action serial [ pk, not null ]
+	name varchar(150) [ not null ]
+	description text [ not null ]
+	id_project integer [ not null ]
+	numero_action varchar [ not null, default: '1' ]
+}
+
+Table travel [headercolor: #175e7a] {
+	id_travel serial [ pk, not null ]
+	start_date timestamp [ not null ]
+	end_date timestamp [ not null ]
+	start_place varchar(50) [ not null ]
+	return_place varchar(50) [ not null ]
+	status varchar(50) [ not null ]
+	purpose varchar(50) [ not null ]
+	start_municipality varchar(50) [ not null ]
+	destination varchar(50) [ not null ]
+	night_count integer [ not null ]
+	meal_count integer [ not null ]
+	comment text [ not null ]
+	license_vehicle varchar(12) [ not null ]
+	comment_vehicle text [ not null ]
+	start_km integer [ not null ]
+	end_km integer [ not null ]
+	id_user integer [ not null ]
+	id_project integer [ not null ]
+	end_municipality varchar(50) [ not null, default: 'RA' ]
+	night_municipality varchar(50) [ not null, default: 'sisteron' ]
+}
+
+Table user_action [headercolor: #175e7a] {
+	id_user integer [ pk, not null ]
+	id_action integer [ pk, not null ]
+}
+
+Table user_action_time [headercolor: #175e7a] {
+	id_user_action_time serial [ pk, not null ]
+	date date [ not null ]
+	duration numeric [ not null ]
+	id_user integer [ not null ]
+	id_action integer [ not null ]
+}
+
+Table expense [headercolor: #175e7a] {
+	id_expense serial [ pk, not null ]
+	name varchar(50) [ not null ]
+	comment text [ not null ]
+	amount numeric [ not null ]
+	id_travel integer [ not null ]
+}
+
+Ref fk_action_id_project_project {
+	action.id_project > project.id_project [ delete: cascade, update: no action ]
+}
+
+Ref fk_travel_id_project_project {
+	travel.id_project > project.id_project [ delete: no action, update: no action ]
+}
+
+Ref fk_travel_id_user_user {
+	travel.id_user > user.id_user [ delete: no action, update: no action ]
+}
+
+Ref fk_user_action_id_action_action {
+	user_action.id_action > action.id_action [ delete: cascade, update: no action ]
+}
+
+Ref fk_user_action_id_user_user {
+	user_action.id_user > user.id_user [ delete: cascade, update: no action ]
+}
+
+Ref fk_user_action_time_id_action_action {
+	user_action_time.id_action > action.id_action [ delete: cascade, update: no action ]
+}
+
+Ref fk_user_action_time_id_user_user {
+	user_action_time.id_user > user.id_user [ delete: cascade, update: no action ]
+}
+
+Ref fk_expense_id_travel_travel {
+	expense.id_travel > travel.id_travel [ delete: cascade, update: no action ]
+}

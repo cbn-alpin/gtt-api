@@ -1,6 +1,6 @@
 # gtt-api
 
-Backend for the *Gestion du Temps de Travail* (GTT) Tool.
+Backend for the _Gestion du Temps de Travail_ (GTT) Tool.
 For production, we will use Gunicorn and Nginx within a Docker container.
 
 ## Development
@@ -25,15 +25,19 @@ cd gtt-api/
 
 ### Configuration file
 
-Create a *.env* configuration file and **adapt it to your configuration**:
+Create a _.env_ configuration file and **adapt it to your configuration**:
 
 ```bash
 cp .env.sample .env
 ```
 
-If you change the location of the *.env* file, you must specify the path to the new location using the `GTT_CONFIG_PATH` environment variable.
+If you change the location of the _.env_ file, you must specify the path to the new location using the `GTT_CONFIG_PATH` environment variable.
 
 ### Database
+
+A [database documentation](docs/db.md) is available; you can also use the [dbml schema](docs/db.dbml).
+
+![Database diagram](/docs/db.svg)
 
 We use Postgresql and you need to add a new user and crate a new database.
 Connect to Psql terminal with a superadmin user:
@@ -43,6 +47,7 @@ sudo -u postgres psql
 ```
 
 In Psql terminal, create a new user (`<user-name>`) with password (`<user-password>`) and a new database (`<new-database-name>`):
+
 ```sql
 CREATE USER <user-name> WITH ENCRYPTED PASSWORD '<user-password>';
 CREATE DATABASE <new-database-name> WITH TEMPLATE template0 OWNER <user-name>;
@@ -65,6 +70,7 @@ SELECT
 ```
 
 Then, you can link the users with the default global project (`id=0`) with :
+
 ```sql
 INSERT INTO user_action (id_user, id_action)
   SELECT
@@ -80,7 +86,6 @@ INSERT INTO user_action (id_user, id_action)
         AND ua.id_action = a.id_action
     );
 ```
-
 
 ### Database migrations
 
@@ -100,7 +105,6 @@ uv run alembic upgrade head
 # GTT_CONFIG_PATH=/new/location/.env alembic upgrade head
 ```
 
-
 ### Generate a Database Revision with Alembic
 
 To generate a new Alembic revision with the message `<my-revision-message>` :
@@ -110,17 +114,16 @@ To generate a new Alembic revision with the message `<my-revision-message>` :
 uv run alembic revision --autogenerate -m "<my-revision-message>"
 ```
 
-
-**Note**: we used *pyproject.toml* instead of *alembic.ini*. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no *alembic.ini* file.
-
+**Note**: we used _pyproject.toml_ instead of _alembic.ini_. See [Using pyproject.toml for configuration](https://alembic.sqlalchemy.org/en/latest/tutorial.html#using-pyproject-toml-for-configuration). So, the project has no _alembic.ini_ file.
 
 ### Dependencies
 
-Install Python dependencies defined in *pyproject.toml*:
+Install Python dependencies defined in _pyproject.toml_:
 
 Install _uv_. See: https://docs.astral.sh/uv/getting-started/installation/
 
 Synchronise the app (install the `.venv` and dependencies):
+
 ```bash
 # Install applications dependencies
 uv sync
@@ -128,14 +131,13 @@ uv sync
 uv sync --extra dev
 ```
 
-**Note**: we don't use *requirements.txt* file in this project.
+**Note**: we don't use _requirements.txt_ file in this project.
 
 Then, run command inside the `.venv` with:
 
 ```bash
 uv run <command>
 ```
-
 
 ### Running Flask
 
@@ -145,13 +147,11 @@ Launch the Flask framework in development mode:
 uv run flask run
 ```
 
-
 ### Running Tests
 
 ```bash
-ur runn pytest
+uv run pytest
 ```
-
 
 ## Docker
 
@@ -176,6 +176,7 @@ docker run --rm -it -e GTT_DATABASE_IP="host.docker.internal" -e GTT_APP_PORT=50
 You can override the config file `.env` paremeters used by the Flask application with env variables using the same name prefixed by `GTT_`. Ex.: `GTT_DATABASE_IP`.
 
 Also, you can use:
+
 - `GTT_API_HOST_PORT`: to change the port of the API on the host machine.
 - `GTT_CONFIG_PATH`: to change the path of the `.env` file.
 - `GTT_APP_PORT`: to change the default port `5001` of the API.
@@ -204,6 +205,7 @@ To locally build the production-ready image:
 ```bash
 docker build -t gtt-api:production --target production .
 ```
+
 To locally run the production image in host network:
 
 ```bash
