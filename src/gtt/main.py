@@ -18,8 +18,9 @@ from gtt.config import get_config
 from gtt.database import db
 from gtt.extensions import jwt, migrate
 
+# TODO: replace this by logging.config.dictConfig(...) in a specific file
 logging.basicConfig(level=logging.getLevelName(get_config().LOG_LEVEL))
-
+logging.getLogger('alembic').setLevel(logging.INFO)
 
 def create_api(config_overrides: dict = None):
     """
