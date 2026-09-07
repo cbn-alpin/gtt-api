@@ -11,7 +11,7 @@ class ProjectSchema(Schema):
     start_date = fields.Date(format="%d/%m/%Y", required=False)
     end_date = fields.Date(format="%d/%m/%Y", required=False)
     is_archived = fields.Boolean()
-    hours_limit = fields.Float()
+    hours_limit = fields.Float(required=False)
     list_action = fields.Nested(ActionSchema)
 
 
@@ -20,17 +20,17 @@ class ProjectUpdateSchema(Schema):
     code = fields.String(required=False)
     name = fields.String(required=False)
     description = fields.String(allow_none=True, required=False)
-    start_date = fields.Date(format="%d/%m/%Y", required=False)
-    end_date = fields.Date(format="%d/%m/%Y", required=False)
-    hours_limit = fields.Float(required=False)
+    start_date = fields.Date(format="%d/%m/%Y", allow_none=True, required=False)
+    end_date = fields.Date(format="%d/%m/%Y", allow_none=True, required=False)
+    hours_limit = fields.Float(allow_none=True, required=False)
     is_archived = fields.Boolean(required=False)
 
 
 class ProjectInputSchema(Schema):
     code = fields.Integer(required=True)
     name = fields.Str(required=True)
-    description = fields.Str(required=False)
+    description = fields.Str(allow_none=True, required=False)
     start_date = fields.Date(format="%d/%m/%Y", required=True)
-    end_date = fields.Date(format="%d/%m/%Y", required=False)
-    hours_limit = fields.Decimal(required=False)
+    end_date = fields.Date(format="%d/%m/%Y", allow_none=True, required=False)
+    hours_limit = fields.Decimal(allow_none=True, required=False)
     is_archived = fields.Bool(required=False)
