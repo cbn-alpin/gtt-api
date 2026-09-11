@@ -25,9 +25,13 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
         .first()
     )
 
+    commit_needed = True
     if existing_entry:
-        existing_entry.duration = duration
-    else:
+        if duration == 0:
+            db.session.delete(existing_entry)
+        else:
+            existing_entry.duration = duration
+    elif duration != 0:
         new_entry = UserActionTime(
             date=datetime.strptime(date, "%Y-%m-%d").date(),
             duration=duration,
@@ -35,8 +39,11 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
             id_action=id_action,
         )
         db.session.add(new_entry)
+    else:
+        commit_needed = False
 
-    db.session.commit()
+    if commit_needed:
+        db.session.commit()
     return id_action
 
 
