@@ -2,7 +2,7 @@
 # BUILDER
 
 # Pull official base image
-FROM python:3.12.6-slim-bullseye AS builder
+FROM python:3.12.14-slim-trixie AS builder
 
 # Set work directory
 WORKDIR /usr/src/app
@@ -36,7 +36,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels .
 # BASE
 
 # Pull official base image
-FROM python:3.12.6-slim-bullseye AS base
+FROM python:3.12.14-slim-trixie AS base
 
 # Set default environment variables
 ENV GTT_USER="app"
