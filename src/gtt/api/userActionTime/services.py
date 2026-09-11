@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from flask import abort
-from sqlalchemy import select, and_, func, literal_column, or_
+from sqlalchemy import and_, func, or_, select
 
 from gtt.api.exception import NotFoundError
 from gtt.api.userActionTime.schema import ActionWithTimeSchema, ProjectTimeSchema
@@ -57,7 +57,10 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
             func.sum(UserActionTime.duration).label("duration"),
         )
         .join(Action, Action.id_project == Project.id_project)
-        .outerjoin(UserAction, and_(UserAction.id_user == user_id, UserAction.id_action == Action.id_action))
+        .outerjoin(
+            UserAction,
+            and_(UserAction.id_user == user_id, UserAction.id_action == Action.id_action),
+        )
         .outerjoin(
             UserActionTime,
             and_(
@@ -69,14 +72,18 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
         )
         .filter(or_(UserAction.id_action.is_not(None), UserActionTime.id_action.is_not(None)))
         .group_by(
-            Project.id_project, Project.name, Action.id_action, Action.name, UserActionTime.date, UserAction.id_action
+            Project.id_project,
+            Project.name,
+            Action.id_action,
+            Action.name,
+            UserActionTime.date,
+            UserAction.id_action,
         )
         .order_by(Project.id_project, Action.id_action, UserActionTime.date)
     )
     projects_actions_time_result = db.session.execute(projects_actions_time_query).all()
     if not projects_actions_time_result:
         raise NotFoundError("No projects found for the given user and date range")
-
 
     total_duration_query = (
         select(
@@ -97,13 +104,13 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
         .group_by(Action.id_action)
     )
     total_duration_per_action = db.session.execute(total_duration_query).mappings().all()
-    total_duration_map = {
-        action["id"]: action["total"] for action in total_duration_per_action
-    }
+    total_duration_map = {action["id"]: action["total"] for action in total_duration_per_action}
 
     list_projects = []
     for project_action_time in projects_actions_time_result:
-        project_object, action_object, action_time_date, is_user_action, action_time_duration = project_action_time
+        project_object, action_object, action_time_date, is_user_action, action_time_duration = (
+            project_action_time
+        )
         project = ProjectTimeSchema().dump(project_object)
         action = ActionWithTimeSchema().dump(action_object)
         action["is_selected"] = bool(is_user_action)

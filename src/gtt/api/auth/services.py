@@ -157,7 +157,7 @@ def user_required(fn):
     def wrapper(*args, **kwargs):
         claims = get_jwt()
         if claims.get("role") != "admin":
-            user_id_from_url = kwargs.get("user_id", None)
+            user_id_from_url = kwargs.get("user_id")
             if user_id_from_url is None:
                 return {"msg": "User ID is required in the URL."}, 400
             if claims.get("user_id") != user_id_from_url:
