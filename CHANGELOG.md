@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add logger management. [@jpm-cbna]
-- Add daily hours limit by project. [@jpm-cbna]
+- Add logger management and force Alembic logs to INFO level. [@jpm-cbna]
+- Add daily hours limit per project. [@jpm-cbna]
 - Add naming convention for constraints. [@jpm-cbna]
-- Add new db sub-commands `status` and `autoupgrade`. [@jpm-cbna]
+- Add new db sub-commands `status` and `autoupgrade`, along with their documentation. [@jpm-cbna]
+- Add [database documentation](docs/db.md). [@jpm-cbna]
 
 ### Changed
 
@@ -20,12 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve settings for Ruff. [@jpm-cbna]
 - Exclude certain files from display and search in VSCode. [@jpm-cbna]
 - Merge old Alembic revisions. [@jpm-cbna]
+- Add this Changelog file. [@jpm-cbna]
+- Add support for `SQLALCHEMY_ECHO`. [jpm-cbna]
+- Delete the previous timesheet entry if the hours entered by the user are equal to 0. [jpm-cbna]
 
 ### Fixed
 
 - Correctly handle `id_project` during bulk import. [@jpm-cbna]
 - Increase user email field size. [@jpm-cbna]
-- Fix Alembic downgrades. [@jpm-cbna]
+- Fixing several Alembic migration errors during downgrades. [@jpm-cbna]
+- Managing hours outside of actions selected by the user in timesheet.
 
 ## [1.1.4] - 2026-02-02
 
