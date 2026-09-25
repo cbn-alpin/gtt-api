@@ -34,17 +34,5 @@ def update_action(action_id: int):
 @admin_required
 def delete_action(action_id: int):
     current_app.logger.info("In DELETE /api/actions/<int:action_id>")
-    try:
-        response = delete(action_id)
-        response = jsonify(response), 200
-    except ValueError as error:
-        current_app.logger.error(error)
-        response = jsonify(error.args[0]), error.args[1]
-    except Exception as e:
-        current_app.logger.error(e)
-        response = (
-            jsonify({"message": "Une erreur est survenue lors de la suppression de l'action"}),
-            500,
-        )
-    finally:
-        return response
+    response = delete(action_id)
+    return jsonify(response), 200
