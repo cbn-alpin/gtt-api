@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 from gtt.api.action.routes import resources as actions_ressources
 from gtt.api.auth.routes import resources as auth_ressources
-from gtt.api.exception import DBInsertException, NotFoundError
+from gtt.api.exception import APIError
 from gtt.api.expense.routes import resources as expenses_ressources
 from gtt.api.project.routes import resources as projects_ressources
 from gtt.api.travel.routes import resources as travels_ressources
@@ -21,6 +21,53 @@ from gtt.extensions import jwt, migrate
 # TODO: replace this by logging.config.dictConfig(...) in a specific file
 logging.basicConfig(level=logging.getLevelName(get_config().LOG_LEVEL))
 logging.getLogger('alembic').setLevel(logging.INFO)
+
+def register_error_handlers(app):
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "type": "NOT_FOUND",
+                    "code": "RESOURCE_NOT_FOUND",
+                    "message": (
+                        "The requested URL was not found on the server. "
+                        "You can check available endpoints at /"
+                    ),
+                }
+            ),
+            404,
+        )
+
+    @app.errorhandler(marshmallow.exceptions.ValidationError)
+    def handle_schema_error(error):
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "type": "DATABASE_ERROR",
+                    "code": "INSERT_FAILED",
+                    "message": "error, schema incorrect",
+                }
+            ),
+            400,
+        )
+
+    @app.errorhandler(APIError)
+    def handle_api_error(error):
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "type": error.error_type,
+                    "code": error.error_code,
+                    "message": error.message,
+                }
+            ),
+            error.status_code,
+        )
+
 
 def create_api(config_overrides: dict = None):
     """
@@ -58,77 +105,16 @@ def create_api(config_overrides: dict = None):
     app.register_blueprint(auth_ressources, url_prefix="/api")
     app.register_blueprint(travels_ressources, url_prefix="/api")
     app.register_blueprint(expenses_ressources, url_prefix="/api")
+
+    register_error_handlers(app)
+
+    @app.route("/health", methods=["GET"])
+    def health():
+        return "Healthy: OK"
+
     return app
 
 
 # Creating the Flask application
 api = create_api()
 api.logger.info(f"Basic logger config set level to {get_config().LOG_LEVEL}")
-
-
-@api.route("/health", methods=["GET"])
-def health():
-    return "Healthy: OK"
-
-
-@api.errorhandler(404)
-def page_not_found(e):
-    return (
-        jsonify(
-            {
-                "status": "error",
-                "type": "NOT_FOUND",
-                "code": "RESOURCE_NOT_FOUND",
-                "message": (
-                    "The requested URL was not found on the server. "
-                    "You can check available endpoints at /"
-                ),
-            }
-        ),
-        404,
-    )
-
-
-@api.errorhandler(DBInsertException)
-def handle_db_insert_error(error):
-    return (
-        jsonify(
-            {
-                "status": "error",
-                "type": "DATABASE_ERROR",
-                "code": "INSERT_FAILED",
-                "message": error.message,
-            }
-        ),
-        error.status_code,
-    )
-
-
-@api.errorhandler(NotFoundError)
-def handle_db_not_found_error(error):
-    return (
-        jsonify(
-            {
-                "status": "error",
-                "type": "NOT_FOUND",
-                "code": "NOT_FOUND",
-                "message": error.message,
-            }
-        ),
-        error.status_code,
-    )
-
-
-@api.errorhandler(marshmallow.exceptions.ValidationError)
-def handle_schema_error(error):
-    return (
-        jsonify(
-            {
-                "status": "error",
-                "type": "DATABASE_ERROR",
-                "code": "INSERT_FAILED",
-                "message": "error, schema incorrect",
-            }
-        ),
-        400,
-    )

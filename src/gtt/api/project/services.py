@@ -4,7 +4,7 @@ import sqlalchemy
 from flask import current_app
 
 from gtt.api.action.schema import ActionSchema
-from gtt.api.exception import DBInsertException, DeleteError, UpdateError
+from gtt.api.exception import DBInsertException, DeleteError, NotFoundError, UpdateError
 from gtt.api.project.schema import ProjectInputSchema, ProjectSchema, ProjectUpdateSchema
 from gtt.database import db
 from gtt.models import Action, Project, UserActionTime
@@ -104,16 +104,13 @@ def get_archived_project():
 def update(project, project_id):
     existing_project = get_project_by_id(project_id)
     if not existing_project:
-        raise UpdateError(status_code=404, message="Project not found")
+        raise NotFoundError("Project not found")
     data = ProjectUpdateSchema().load(project)
     if data.get("is_archived", False) and (
         not existing_project["end_date"]
         or datetime.strptime(existing_project["end_date"], "%d/%m/%Y").date() > date.today()
     ):
-        raise UpdateError(
-            status_code=400,
-            message="Un projet ne peut être archivé que lorsque sa date de fin est passée.",
-        )
+        raise UpdateError("Un projet ne peut être archivé que lorsque sa date de fin est passée.")
     db.session.query(Project).filter_by(id_project=project_id).update(data)
     db.session.commit()
     return get_project_by_id(project_id)
