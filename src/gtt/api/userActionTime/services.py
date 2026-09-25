@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import abort
 from sqlalchemy import and_, func, or_, select
@@ -48,6 +48,10 @@ def create_or_update_user_action_time(date: str, duration: float, id_user: int, 
 
 
 def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
+    current_year = datetime.strptime(date_start, "%Y-%m-%d").isocalendar().year
+    year_start = date(current_year, 1, 1)
+    next_year_start = date(current_year + 1, 1, 1)
+
     projects_actions_time_query = (
         select(
             Project,
@@ -96,8 +100,8 @@ def get_user_projects_time_by_id(user_id: int, date_start: str, date_end: str):
             and_(
                 UserActionTime.id_action == Action.id_action,
                 UserActionTime.id_user == user_id,
-                func.date(UserActionTime.date) >= func.date(date_start),
-                func.date(UserActionTime.date) <= func.date(date_end),
+                UserActionTime.date >= year_start,
+                UserActionTime.date < next_year_start,
             ),
         )
         .filter(UserAction.id_user == user_id)

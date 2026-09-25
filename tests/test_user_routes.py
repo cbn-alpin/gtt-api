@@ -1,5 +1,10 @@
+from datetime import date
+from http import HTTPStatus
+
 import pytest
 from conftest import TEST_DATABASE_URL
+
+from gtt.models import UserAction, UserActionTime
 
 
 @pytest.fixture
@@ -89,6 +94,41 @@ def test_get_user_projects_time(
     if expected_status == 200:
         data = response.get_json()
         assert isinstance(data, list)
+
+
+@pytest.mark.parametrize(
+    "week_range",
+    [
+        ("2019-12-30", "2020-01-05"),
+        ("2020-12-28", "2021-01-03"),
+    ],
+)
+def test_get_user_projects_time_total_uses_iso_week_year(
+    user_client, link_user_actions, db_session, week_range
+):
+    user_id = link_user_actions
+    action_id = db_session.query(UserAction).filter_by(id_user=user_id).first().id_action
+    db_session.add_all(
+        [
+            UserActionTime(date(2019, 12, 31), 8, user_id, action_id),
+            UserActionTime(date(2020, 1, 2), 1.5, user_id, action_id),
+            UserActionTime(date(2020, 6, 15), 2.5, user_id, action_id),
+            UserActionTime(date(2020, 12, 31), 7, user_id, action_id),
+            UserActionTime(date(2021, 1, 2), 1, user_id, action_id),
+        ]
+    )
+    db_session.flush()
+    date_start, date_end = week_range
+
+    response = user_client.get(
+        f"/api/user/{user_id}/projects/times",
+        query_string={"date_start": date_start, "date_end": date_end},
+    )
+
+    assert response.status_code == HTTPStatus.OK, response.get_data(as_text=True)
+    actions = response.get_json()[0]["list_action"]
+    action = next(action for action in actions if action["id_action"] == action_id)
+    assert float(action["total_duration"]) == 11.0
 
 
 def test_delete_user_action(user_client, create_user_action):
