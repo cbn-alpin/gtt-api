@@ -117,26 +117,17 @@ def update(project, project_id):
 
 
 def delete(project_id: int):
-    try:
-        total_duration = (
-            db.session.query(db.func.sum(UserActionTime.duration))
-            .join(Action, UserActionTime.id_action == Action.id_action)
-            .filter(Action.id_project == project_id)
-            .scalar()
+    total_duration = (
+        db.session.query(db.func.sum(UserActionTime.duration))
+        .join(Action, UserActionTime.id_action == Action.id_action)
+        .filter(Action.id_project == project_id)
+        .scalar()
+    )
+    if total_duration and total_duration > 0:
+        raise DeleteError(
+            f"Le projet '{project_id}' ne peut pas être supprimé "
+            "car des saisies de temps y sont associés"
         )
-        if total_duration and total_duration > 0:
-            raise DeleteError(
-                {
-                    "message": (
-                        f"Le projet '{project_id}' ne peut pas être supprimé "
-                        "car des saisies de temps y sont associés"
-                    )
-                }
-            )
 
-        db.session.query(Project).filter_by(id_project=project_id).delete()
-        db.session.commit()
-    except Exception as error:
-        db.session.rollback()
-        current_app.logger.error(f"ProjectDBService - delete : {error}")
-        raise
+    db.session.query(Project).filter_by(id_project=project_id).delete()
+    db.session.commit()

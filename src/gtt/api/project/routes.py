@@ -5,7 +5,7 @@ from flask import Blueprint, abort, current_app, jsonify, request
 from flask_jwt_extended import jwt_required
 
 from gtt.api.auth.services import admin_required
-from gtt.api.exception import DeleteError, UpdateError
+from gtt.api.exception import UpdateError
 from gtt.api.project.services import (
     create_project,
     delete,
@@ -134,21 +134,8 @@ def update_project(project_id: int):
 @admin_required
 def delete_project(project_id: int):
     current_app.logger.info("In DELETE /api/projects/<int:project_id>")
-    try:
-        response = delete(project_id)
-        return jsonify(response), 200
-    except DeleteError as error:
-        current_app.logger.error(error)
-        return jsonify(error.args[0]), 403
-    except ValueError as error:
-        current_app.logger.error(error)
-        return (
-            jsonify({"message": "Une erreur est survenue lors de la suppression du projet"}),
-            error.args[1],
-        )
-    except Exception as error:
-        current_app.logger.error(error)
-        return jsonify({"message": "Une erreur est survenue lors de la suppression du projet"}), 500
+    response = delete(project_id)
+    return jsonify(response), 200
 
 
 @resources.route("/projects/gefiproj", methods=["GET"])
