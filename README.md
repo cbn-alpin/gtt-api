@@ -175,6 +175,26 @@ uv run flask run
 uv run pytest
 ```
 
+### Version management
+
+The project version is managed by `setuptools-scm`. It is derived from Git tags and commit history. When a wheel is built, `setuptools-scm` writes the calculated version to `VERSION.txt` and includes it in the wheel metadata. If Git version information is unavailable, the configured fallback version is `0.0.0`.
+
+To test version generation locally, run these commands from the repository root:
+
+```bash
+uv build --wheel
+cat VERSION.txt
+```
+
+To test generation and copying into the final Docker image, build without cache and read the file from the image:
+
+```bash
+docker build --no-cache --target production -t gtt-api:version-test .
+docker run --rm --entrypoint cat gtt-api:version-test /home/app/web/VERSION.txt
+```
+
+The Docker build context must include `.git` and the relevant tags for `setuptools-scm` to calculate the project version.
+
 ## Docker
 
 This project is configured to be used with Docker and Docker Compose.
