@@ -27,6 +27,8 @@ jobs:
 
       - name: Check out the repo
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -56,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           target: ${{ steps.build_target.outputs.TARGET }}
-          context: '{{defaultContext}}'
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
